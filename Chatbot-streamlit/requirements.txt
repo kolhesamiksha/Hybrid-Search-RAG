@@ -15,4 +15,5 @@ fastapi
 uvicorn
 flashrank
 lark
+ipython
 pymongo[srv]==3.11
