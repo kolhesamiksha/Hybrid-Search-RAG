@@ -7,7 +7,7 @@ import requests
 from base64 import b64encode
 from pydantic import BaseModel
 from src.utils.logutils import Logger
-
+from src.api import advance_rag_chatbot
 from langchain_core.messages import HumanMessage, AIMessage
 
 # logger = Logger()
@@ -56,20 +56,22 @@ def message_func(text, is_user=False):
             </div>
         </div>
         """,
-        unsafe_allow_html=True)
+        unsafe_allow_html=True
+    )
 
 def conversation_chat(query, history):
     # logger.info(f"Query {query}")
     # logger.info(f"History {history}")
     print("Inside API")
-    data = {
-        "query": query['query'],
-        "history": history
-    }
-    response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
-    print(response.json())
+    # data = {
+    #     "query": query['query'],
+    #     "history": history
+    # }
+    #response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
+    response = advance_rag_chatbot(query['query'], history)
+    print(response)
     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
-    return response.json()
+    return response
 
 def main():
     st.set_page_config(
@@ -88,8 +90,8 @@ def main():
     st.markdown("""
     <style>
         .top-bar {
-            background-color: #f8f8f8; /* Example background color */
-            padding: 10px; /* Example padding */
+            background-color: #FFD700; /* Example background color */
+            padding: 30px; /* Example padding */
             text-align: center; /* Center the text */
         }
 
@@ -103,7 +105,7 @@ def main():
             height: 40px;
             content: "Send url('{svg_base64}')";
             padding: 10px;
-            background-color: #e6ffe6;
+            background-color: #FFD700;
             color: black;
             border: 2px solid black;
             border-radius: 5px;
@@ -112,21 +114,47 @@ def main():
             position: fixed;
             bottom: 3rem;
         }
+        .stButton > button {
+            width: 80px;
+            height: 40px;
+            background-color: #FFD700; /* Darker yellow color */
+            color: black;
+            border: 2px solid black;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
         .stTextInput>div>div>input {
             width: 85% !important;
             padding: 10px;
-            background: #e6ffe6;
+            background: #FFD700;
             border: 1px solid #ccc;
             border-radius: 5px;
             position: fixed;
             bottom: 3rem;
             height: 40px;
+            font-weight: bold;
         }
         
         .main-container {
             background: #eeeeee;
             height: 100vh;
             overflow: hidden;
+        }
+        
+        .github-link {
+            position: absolute;
+            right: 10px; /* Distance from the right edge of the top bar */
+            top: 60%; /* Center vertically relative to the top bar */
+            transform: translateY(-50%); /* Adjust vertical alignment */
+            width: 50px; /* Adjust size as needed */
+            height: 50px; /* Adjust size as needed */
+        }
+
+        .github-icon {
+            border-radius: 50%; /* Makes the icon round */
+            background: black; /* Background color for the circle */
+            padding: 8px; /* Space between the circle and the icon */
         }
 
         .chat-container {
@@ -177,6 +205,9 @@ def main():
         
         <div class="top-bar">
             <span class="title-text">AI Consultant</span>
+            <a href="https://github.com/kolhesamiksha" class="github-link" target="_blank">
+                <svg class="github-icon" xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22v-2.09a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.42 5.42 0 0 0 20 4.77 5.07 5.07 0 0 0 20.91 1S19.73.65 16 3a13.38 13.38 0 0 0-8 0C5.27.65 4.09 1 4.09 1A5.07 5.07 0 0 0 5 4.77 5.42 5.42 0 0 0 3.5 10.3c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 19.91V22"></path></svg>
+            </a>
         </div>
         """, unsafe_allow_html=True
     )
@@ -220,7 +251,13 @@ def main():
                 with st.container():
                     message_func(st.session_state["past"][i], is_user=True)
                     if 'output' in locals():
-                        message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
+                        message_func(
+                            f'<strong>Latency:</strong> {output[1]}s<br>'
+                            f'<strong>Total_Cost:</strong> ${output[0][1]}<br>'
+                            f'{st.session_state["generated"][i]}',
+                            is_user=False
+                        )
+                        #message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
 
 if __name__ == "__main__":
     main()
