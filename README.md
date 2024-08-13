@@ -181,7 +181,8 @@ This Will open a streamlit application where you can ask your questions and get 
 ## Sample Output
 ![chatbot_img2](https://github.com/user-attachments/assets/69560a5b-53f0-4f18-a14e-13a27442e659)
 ![chtbot_img3](https://github.com/user-attachments/assets/68838c76-fbdb-431a-a4c8-6d4bdd3e82a1)
-![chatbot_img4](https://github.com/user-attachments/assets/f7b3b07b-5a6a-472f-9370-7aab1856e2a8)
+![chatbot_img1](https://github.com/user-attachments/assets/5d2c5328-17ca-4762-af67-4646d9106d5f)
+
 
 ## Future Enhancements
 - RAG Performance evaluation by RAGAS.
