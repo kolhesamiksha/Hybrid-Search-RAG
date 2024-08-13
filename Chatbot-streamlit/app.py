@@ -41,7 +41,7 @@ def message_func(text, is_user=False):
         bg_color = question_bg_color
         alignment = "flex-end"
     else:
-        avatar_url = "https://www.nvidia.com/content/nvidiaGDC/us/en_US/about-nvidia/legal-info/logo-brand-usage/_jcr_content/root/responsivegrid/nv_container_392921705/nv_container/nv_image.coreimg.100.850.png/1703060329053/nvidia-logo-vert.png"  # Provided logo link
+        avatar_url = "https://media.istockphoto.com/id/1184817738/vector/men-profile-icon-simple-design.jpg?s=612x612&w=0&k=20&c=d-mrLCbWvVYEbNNMN6jR_yhl_QBoqMd8j7obUsKjwIM="  # Provided logo link
         bg_color = response_bg_color
         alignment = "flex-start"
             # <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -66,17 +66,10 @@ def conversation_chat(query, history):
         "query": query['query'],
         "history": history
     }
-    response = requests.post("http://127.0.0.1:8000/predict", json=data)
+    response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
     print(response.json())
     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
     return response.json()
-
-# def conversation_chat(query, history):
-#     logger.info(f"Query {query}")
-#     logger.info(f"History {history}")
-#     result = advance_rag_chatbot(query['query'], history, logger)
-#     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
-#     return result
 
 def main():
     st.set_page_config(
