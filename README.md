@@ -1,10 +1,8 @@
 # Hybrid-Search-RAG-Chatbot
 
-An AI Assistant to help you solve Any Queries Regarding AI.
-
 ## About
 
-This Application is builted using  the RAG
+This Application is builted using Advance RAG Techniques. Trained over 2k websites scraped under the domain website 
 
 ![advance-rag-workflow](https://github.com/user-attachments/assets/f66d9c12-5356-4b48-8a2e-1a4551181f57)
 
@@ -22,7 +20,11 @@ The approaches Followed for building RAG pipeline is discussed below
 
 #### 1. WebCrawling: 
 
-
+The Website was a rich source of documents in everydomain like AI, Supply chain, Digital, Cybersecurity and Various Informational Blogs and Use-cases Discussed. Most of the websites have a common web interface and HTML Codebase which was suitable to built an automation using For Webscraping. 
+1. Used Sitemap of Topics under ey_in domain.
+1. Analyse the Structure of the Websites.
+2. Extracted metadata required further for metadata filtering or Self-Query Retriever to post-retrieve for better performance i.e. Author name, related topics, pdf_links. Pdf links added because most of the blogs contains PDF for detailed information. in future content can be extracted and used for training of the chatbot for more information.
+3. Built an Automation to scrape and extract 2k websites.
 
 #### 2. Semantic Chunking Techniques:
 
@@ -34,14 +36,11 @@ After WeCrawling and Scraping data from the BaseURL. Applied various Techniques 
 
 - 2.1 **Statistical Chunking**: Better for English Text only. Instead of chunking text with a fixed chunk size, the semantic splitter adaptively picks the breakpoint in-between sentences using embedding similarity. This ensures that a "chunk" contains sentences that are semantically related to each other. For Semantic chunking used **jinaai/jina-embeddings-v2-base-en** (8K context length) by langchain FastEmbedding Module.
 
-
 - 2.2 **Rolling Window Spltting(Used in RAG)**: It uses a rolling window to consider splitting and applies semantic similarity while considering the sentence to combine and split. This Technique is more generic for any type of embeddding model, MAX_SPLI, MIN_SPLIT parameters makes it more customisable. Providing Chunks compatible to semantic chunking technique.
 
 #### 3. Metadata Chunking Method: 
 
-Metadata Filtering is a way to limit the searches and increase chances of Information exact retrieval of chunks. For Metadata added Primary Source_links, Sections_id, Prechunk, Postchunk.
-
-Prechunk & postchunk helps to add more context or rather parent document information if not splitted documents accurately into the Context of LLM. Helps to get improve the accuracy of the Chatbot.
+Metadata Filtering is a way to limit the searches and increase chances of Information exact retrieval of chunks. For Metadata added Primary Source_links, author_names, related_topics, pdf_links.
 
 #### 4: Embedding Models:
 Tried Different types of embedding models by considering system Size and Best performance for english text on MTEB. Used Fastembedding() from langchain to get the embeddings best models available for local instead of API. Local Embedding Hosting saves the credits and Manage the latency during retrieval pipeline.
@@ -68,20 +67,20 @@ Total for 5 queries using Sparse search generated: 15 chunks & using Dense searc
 
 #### 9. Reranking Techniques:
 
-Reranking technique is Important and Usefule When applied Selfquery & Multi query generation technique to Re-rank the Chunks and Retrieve most Ranked with High similairty To consider and send as Context to LLM.
+Reranking technique is Important and Useful When applied Selfquery & Multi query generation technique to Re-rank the Chunks and Retrieve most Ranked with High similairty To consider and send as Context to LLM.
 
-Re-ranking Models: Used Flashrank defaukt Local Reranking model:**ms-macro-tinybert-l-2-v2**
+Re-ranking Models: Used Flashrank defautt Local Reranking model:**ms-macro-tinybert-l-2-v2**. SPLADE/ColBert are most used reranking models and perform best.
 
 #### 10. LLM Model:
 
-LLM Model: Used gpt-4o model using AI/ML API. Best performing LLM model available.
+LLM Model: Used gpt-4o model using AI/ML API. Best performing LLM model available. Used for Smooth Deployment to make it public
 
 ## Results
 
 **Features**:
-- Post meta filtering with pre & post chunks, sections_id
+- Post meta filtering
 - Hybrid-Search
-- Chat-history
+- Chat-history as 2
 - Sourcelinks in the Response
 - Latency(time require to process the Request) , Cost-per-request in the Response.
 
@@ -184,9 +183,8 @@ This Will open a streamlit application where you can ask your questions and get 
 ![chtbot_img3](https://github.com/user-attachments/assets/68838c76-fbdb-431a-a4c8-6d4bdd3e82a1)
 ![chatbot_img4](https://github.com/user-attachments/assets/f7b3b07b-5a6a-472f-9370-7aab1856e2a8)
 
-
 ## Future Enhancements
-- RAG Performance valuation by RAGAS.
+- RAG Performance evaluation by RAGAS.
 
 **for more details**
 Happy to Connect!! [Samiksha Kolhe](https://www.linkedin.com/in/samiksha-kolhe25701/)
