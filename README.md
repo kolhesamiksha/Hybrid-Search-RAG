@@ -8,6 +8,10 @@ This Application is builted using  the RAG
 
 ![advance-rag-workflow](https://github.com/user-attachments/assets/f66d9c12-5356-4b48-8a2e-1a4551181f57)
 
+# Deployed FASTAPI: 
+
+https://comparable-clarie-adsds-226b08fd.koyeb.app/
+
 ## Approach: RAG Workflow Stratergy
 
 The approaches Followed for building RAG pipeline is discussed below
