@@ -91,7 +91,7 @@ MASTER_PROMPT = """
         6. Please refrain from inventing responses and kindly respond with "I apologize, but that falls outside of my current scope of knowledge."
         7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
         8. Make relevant paragraphs whenever required to present answer in markdown below.
-        9. MUST PROVIDE the Source Link below the answer like [Source: source_link].
+        9. MUST PROVIDE the Source Link above the Answer [Source: source_link].
         """
 
 def sparse_embedding_model(texts: List[str], embed_model):
@@ -253,34 +253,6 @@ def format_docs(docs):
 def embedding_model():
     embeddings = OpenAIEmbeddings(model=openai_embedding_model_name, api_key=OPENAI_API_KEY)
     return embeddings
-
-def format_document(doc: Document) -> str:
-    prompt = PromptTemplate(input_variables=["page_content"], template="{page_content}")
-    if 'source' in doc.metadata.keys():
-        prompt += PromptTemplate(input_variables=["source"], template="\n[Source: {source}]")
-    if 'page' in doc.metadata.keys():
-        prompt += PromptTemplate(input_variables=["page"], template="\n[Page: {page}]")
-    base_info = {"page_content": doc.page_content, **doc.metadata}
-    missing_metadata = set(prompt.input_variables).difference(base_info)
-    if len(missing_metadata) > 0:
-        required_metadata = [
-            iv for iv in prompt.input_variables if iv != "page_content"
-        ]
-        raise ValueError(
-            f"Document prompt requires documents to have metadata variables: "
-            f"{required_metadata}. Received document with missing metadata: "
-            f"{list(missing_metadata)}."
-        )
-    document_info = dict()
-    for k in prompt.input_variables:
-        if k=='page':
-            document_info[k] = str(int(base_info[k]) + 1)
-        else:
-            document_info[k] = base_info[k]
-    return prompt.format(**document_info)
-
-def format_docs(docs):
-    return "\n\n".join(format_document(doc) for doc in docs)
 
 def support_prompt():
     support_template = """
