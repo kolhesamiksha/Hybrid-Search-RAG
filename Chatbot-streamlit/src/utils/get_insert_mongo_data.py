@@ -1,7 +1,7 @@
 from .mongo_init import get_database
 import os
 
-CONNECTION_STRING = "mongodb+srv://kolhesamiksha25:yRxcIbqRBJORdwFm@cluster0.p3zf3zw.mongodb.net/"
+CONNECTION_STRING = os.getenv('CONNECTION_NAME')
 
 def get_creds_from_mongo(connection_string):
     dbname = get_database(connection_string)
@@ -17,6 +17,8 @@ def format_creds_mongo():
             mongo_dict['OPENAI_API_KEY'] = items['cred_values']
         if items['cred_name']=="OPENAI_API_BASE":
             mongo_dict['OPENAI_API_BASE'] = items['cred_values']
+        if items['cred_name']=="GROQ_API_KEY":
+            mongo_dict['GROQ_API_KEY'] = items['cred_values']
         if items['cred_name']=="ZILLIZ_CLOUD_URI":
             mongo_dict['ZILLIZ_CLOUD_URI'] = items['cred_values']
         if items['cred_name']=="ZILLIZ_CLOUD_API_KEY":
