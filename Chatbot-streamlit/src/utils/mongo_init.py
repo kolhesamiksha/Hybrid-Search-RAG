@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 import os
 
-CONNECTION_STRING = "mongodb+srv://kolhesamiksha25:boldsami@cluster0.p3zf3zw.mongodb.net/"
+CONNECTION_STRING = os.getenv('CONNECTION_NAME')
 
 def get_database(connection_string):
    client = MongoClient(connection_string)
@@ -40,6 +40,12 @@ def insert_data(collection_name):
     "_id" : 5,
     "cred_name" : "COLLECTION_NAME",
     "cred_values" : "advance_rag_sam"
+    }
+
+    item_6 = {
+    "_id" : 2,
+    "cred_name" : "GROQ_API_KEY",
+    "cred_values" : ""
     }
 
     collection_name.insert_one(item_5)                                 #insert_many([item_1,item_2,item_3,item_4])
