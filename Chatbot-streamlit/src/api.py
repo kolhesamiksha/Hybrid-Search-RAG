@@ -217,7 +217,7 @@ def Reranker(question, docs_to_rerank) -> List:
     compressor = FlashrankRerank()
     retriever = faiss_store_docs_to_rerank(docs_to_rerank)
     compression_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor, base_retriever=retriever.as_retriever()
+        base_compressor=compressor, base_retriever=retriever.as_retriever(search_kwargs={"k": 3})
     )
     
     compressed_docs = compression_retriever.invoke(
@@ -298,11 +298,11 @@ def advance_rag_chatbot(question, history):
     for query in expanded_queries:
         output = milvus_hybrid_search(question, expr="")
         combined_results.extend(output)
-    # reranked_docs = Reranker(question, combined_results)
-    formatted_context = format_docs(combined_results[:5])
+    reranked_docs = Reranker(question, combined_results)
+    formatted_context = format_docs(reranked_docs)
     response = chatbot(question, formatted_context, history)
     end_time = time.time() - st_time
-    return (response, end_time)
+    return (response, end_time, reranked_docs)
 
 def chatbot(question, formatted_context, retrieved_history):
 
