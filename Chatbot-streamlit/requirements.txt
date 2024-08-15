@@ -15,6 +15,7 @@ faiss-cpu
 fastapi
 uvicorn
 flashrank
+PyGithub
 lark
 ipython
 pymongo[srv]==3.11
