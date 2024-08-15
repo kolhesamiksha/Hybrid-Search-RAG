@@ -74,7 +74,6 @@ def conversation_chat(query, history):
     #response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
     response = advance_rag_chatbot(query['query'], history)
     save_history_to_github(query['query'], response)
-    df = pd.concat([df, new_data], ignore_index=True)
     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
 
     return response
@@ -86,7 +85,7 @@ def save_history_to_github(query, response):
     decoded_content = base64.b64decode(contents.content)
     csv_file = io.BytesIO(decoded_content)
     df = pd.read_csv(csv_file)
-    new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[0][2]]})
+    new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[2]]})
     concat_df = pd.concat([df, new_data], ignore_index=True)
     updated_csv = concat_df.to_csv(index=False)
     repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
@@ -254,11 +253,14 @@ def main():
             data = {
                 'query': user_input
             }
-            output  = conversation_chat(
-                data, st.session_state["history"]
-            )
+            try:
+                output  = conversation_chat(
+                    data, st.session_state["history"]
+                )
+            except Exception as e:
+                st.session_state["generated"].append('There is some issue with API Key, Usage Limit exceeds for the Day!!')
             st.session_state["history"].append([user_input, output[0][0]])
-            st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
+            # st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
             st.session_state["past"].append(user_input)
             st.session_state["generated"].append(output[0][0])
 
@@ -271,7 +273,8 @@ def main():
                     if 'output' in locals():
                         message_func(
                             f'<strong>Latency:</strong> {output[1]}s<br>'
-                            f'<strong>Total_Cost:</strong> ${output[0][1]}<br>'
+                            f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
+                            f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
                             f'{st.session_state["generated"][i]}',
                             is_user=False
                         )
