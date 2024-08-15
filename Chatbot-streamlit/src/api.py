@@ -7,6 +7,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_community.vectorstores import Milvus
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 
 import time
 from langchain_core.documents import Document
@@ -54,9 +55,7 @@ rag_router = APIRouter()
 
 creds_mongo = format_creds_mongo()
 
-os.environ['OPENAI_API_KEY'] = creds_mongo['OPENAI_API_KEY']
-OPENAI_API_KEY = creds_mongo['OPENAI_API_KEY']
-OPENAI_API_BASE = creds_mongo['OPENAI_API_BASE']
+os.environ['GROQ_API_KEY'] = creds_mongo['GROQ_API_KEY']
 ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
 ZILLIZ_CLOUD_API_KEY = creds_mongo['ZILLIZ_CLOUD_API_KEY']
 
@@ -94,6 +93,10 @@ MASTER_PROMPT = """
         9. MUST PROVIDE the Source Link above the Answer [Source: source_link].
         """
 
+LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
+LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
+LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+
 def sparse_embedding_model(texts: List[str], embed_model):
     embeddings = SparseFastEmbedEmbeddings(model_name=embed_model)
     query_embeddings = embeddings.embed_documents([texts])
@@ -120,7 +123,7 @@ def initialise_vector_store(vector_field:str, search_params:dict):
     return vector_store
 
 def initialise_llm_model(llm_model):
-    llm_model = ChatOpenAI(model=llm_model,openai_api_key=OPENAI_API_KEY, temperature=TEMPERATURE, openai_api_base=OPENAI_API_BASE)
+    llm_model = ChatGroq(model="llama-3.1-70b-versatile",temperature=0.0,max_retries=2)
     return llm_model
 
 # Self Query Retriever
@@ -135,17 +138,17 @@ def Self_query_retrieval(question):
         ),
         AttributeInfo(
             name="author_name",
-            description="the local file path of the file.",
+            description="the author of the file.",
             type="string",
         ),
         AttributeInfo(
             name="related_topics",
-            description="Total number of files pages present inside the file.",
+            description="The topics related to the file.",
             type="array",
         ),
         AttributeInfo(
             name="pdf_links", 
-            description="The year the file was released or published.", 
+            description="The PDF links which contains extra information about the file.", 
             type="array"
         ),
     ]
@@ -226,11 +229,7 @@ def Reranker(question, docs_to_rerank) -> List:
     return compressed_docs
 
 def format_document(doc: Document) -> str:
-        # if 'prechunk' in doc.metadata.keys():
-        #     prompt = PromptTemplate(input_variables=["prechunk"], template="{prechunk}\n")
         prompt = PromptTemplate(input_variables=["page_content"], template="{page_content}")
-        # if 'postchunk' in doc.metadata.keys():
-        #     prompt += PromptTemplate(input_variables=["postchunk"], template="{postchunk}\n")
         if 'source_link' in doc.metadata.keys():
             prompt += PromptTemplate(input_variables=["source_link"], template="\n[Source: {source_link}]")
         base_info = {"page_content": doc.page_content, **doc.metadata}
@@ -255,24 +254,30 @@ def embedding_model():
     return embeddings
 
 def support_prompt():
+    LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
+    LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
+    LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+
     support_template = """
+        {LLAMA3_SYSTEM_TAG}
         {MASTER_PROMPT}
-                ------
+        {LLAMA3_USER_TAG}
 
-                CONTEXT:
-                {context}
+        Use the following context to answer the question.
+        CONTEXT:
+        {context}
+    
+        CHAT HISTORY:
+        {chat_history}
 
-                CHAT HISTORY:
-                {chat_history}
+        Question: {question}
+        {LLAMA3_ASSISTANT_TAG}
+        """
 
-                QUESTION:
-                {question}
-                """
-    SUPPORT_PROMPT = PromptTemplate(
-        template=support_template, input_variables=["chat_history", "context", "question", "MASTER_PROMPT"]
+    QA_PROMPT = PromptTemplate(
+        template=support_template, input_variables=["LLAMA3_SYSTEM_TAG","LLAMA3_USER_TAG","LLAMA3_ASSISTANT_TAG","MASTER_PROMPT", "context", "chat_history", "question"]
     )
-
-    return SUPPORT_PROMPT
+    return QA_PROMPT
 
 def calculate_cost(total_usage:Dict):
     # specific for gpt-4o, not generic
@@ -322,7 +327,10 @@ def chatbot(question, formatted_context, retrieved_history):
 
     chain = (
         {
-            "context":RunnablePassthrough(),
+            "LLAMA3_ASSISTANT_TAG":RunnablePassthrough(),
+            "LLAMA3_USER_TAG":RunnablePassthrough(),
+            "LLAMA3_SYSTEM_TAG":RunnablePassthrough(),
+            "context": RunnablePassthrough(),
             "question": RunnablePassthrough(),
             "chat_history": RunnablePassthrough(),
             "MASTER_PROMPT": RunnablePassthrough()
@@ -332,13 +340,10 @@ def chatbot(question, formatted_context, retrieved_history):
     )
     try:
         with get_openai_callback() as cb:
-            response = chain.invoke(
-                {"context":formatted_context,"question": question, "chat_history": history, "MASTER_PROMPT" : MASTER_PROMPT},
-                {"callbacks": [cb]}
-            )
+            response = chain.invoke({"context":formatted_context,"chat_history":history, "question": question, "MASTER_PROMPT": MASTER_PROMPT, "LLAMA3_ASSISTANT_TAG":LLAMA3_ASSISTANT_TAG, "LLAMA3_USER_TAG":LLAMA3_USER_TAG, "LLAMA3_SYSTEM_TAG":LLAMA3_SYSTEM_TAG},{"callbacks": [cb]})
             result, token_usage = format_result(response)
-            total_cost = calculate_cost(token_usage)
-            return (result, total_cost)
+            # total_cost = calculate_cost(token_usage)
+            return (result, token_usage)
     except Exception as e:
         logger.info(f"ERROR: {traceback.format_exc()}")
         return str(e)
