@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_chat import message
 
 import os
+import io
 import tempfile
 import requests
 from base64 import b64encode
@@ -9,6 +10,9 @@ from pydantic import BaseModel
 from src.utils.logutils import Logger
 from src.api import advance_rag_chatbot
 from langchain_core.messages import HumanMessage, AIMessage
+from github import Github
+import pandas as pd
+import base64
 
 # logger = Logger()
 
@@ -69,9 +73,23 @@ def conversation_chat(query, history):
     # }
     #response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
     response = advance_rag_chatbot(query['query'], history)
-    print(response)
+    save_history_to_github(query['query'], response)
+    df = pd.concat([df, new_data], ignore_index=True)
     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
+
     return response
+
+def save_history_to_github(query, response):
+    g = Github(os.getenv('GITHUB_TOKEN'))
+    repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
+    contents = repo.get_contents('Chatbot-streamlit/chat_history/chat_history.csv')
+    decoded_content = base64.b64decode(contents.content)
+    csv_file = io.BytesIO(decoded_content)
+    df = pd.read_csv(csv_file)
+    new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[0][2]]})
+    concat_df = pd.concat([df, new_data], ignore_index=True)
+    updated_csv = concat_df.to_csv(index=False)
+    repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
 
 def main():
     st.set_page_config(
