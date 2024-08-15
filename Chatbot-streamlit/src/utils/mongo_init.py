@@ -14,37 +14,31 @@ def create_collection(dbname):
 def insert_data(collection_name):
     item_1 = {
     "_id" : 1,
-    "cred_name" : "OPENAI_API_KEY",
+    "cred_name" : "ZILLIZ_CLOUD_URI",
     "cred_values" : ""
     }
 
     item_2 = {
     "_id" : 2,
-    "cred_name" : "OPENAI_API_BASE",
+    "cred_name" : "ZILLIZ_CLOUD_API_KEY",
     "cred_values" : ""
     }
-
-    item_3 = {
+    
+    item_3 ={
     "_id" : 3,
-    "cred_name" : "ZILLIZ_CLOUD_URI",
+    "cred_name" : "COLLECTION_NAME",
     "cred_values" : ""
     }
 
     item_4 = {
     "_id" : 4,
-    "cred_name" : "ZILLIZ_CLOUD_API_KEY",
+    "cred_name" : "GROQ_API_KEY",
     "cred_values" : ""
     }
-    
-    item_5 ={
-    "_id" : 5,
-    "cred_name" : "COLLECTION_NAME",
-    "cred_values" : "advance_rag_sam"
-    }
 
-    item_6 = {
-    "_id" : 2,
-    "cred_name" : "GROQ_API_KEY",
+    item_5 = {
+    "_id" : 5,
+    "cred_name" : "GITHUB_TOKEN",
     "cred_values" : ""
     }
 
