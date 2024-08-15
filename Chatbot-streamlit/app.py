@@ -14,7 +14,12 @@ from github import Github
 import pandas as pd
 import base64
 
+from src.utils.get_insert_mongo_data import format_creds_mongo
+
 # logger = Logger()
+creds_mongo = format_creds_mongo()
+
+GTHUB_TOKEN = creds_mongo['GITHUB_TOKEN']
 
 def initialize_session_state():
     if "history" not in st.session_state:
@@ -79,7 +84,7 @@ def conversation_chat(query, history):
     return response
 
 def save_history_to_github(query, response):
-    g = Github(os.getenv('GITHUB_TOKEN'))
+    g = Github(GTHUB_TOKEN)
     repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
     contents = repo.get_contents('Chatbot-streamlit/chat_history/chat_history.csv')
     decoded_content = base64.b64decode(contents.content)
