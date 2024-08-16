@@ -42,7 +42,12 @@ def insert_data(collection_name):
     "cred_values" : ""
     }
 
-    collection_name.insert_one(item_5)                                 #insert_many([item_1,item_2,item_3,item_4])
+    item_6 = {
+    "_id" : 6,
+    "cred_name" : "COLLECTION_NAME",
+    "cred_values" : ""
+    }
+    collection_name.insert_one(item_6)                                 #insert_many([item_1,item_2,item_3,item_4])
     print("Successfully Stored Data into the Mongo")
 
 if __name__ == "__main__":
