@@ -59,7 +59,7 @@ os.environ['GROQ_API_KEY'] = creds_mongo['GROQ_API_KEY']
 ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
 ZILLIZ_CLOUD_API_KEY = creds_mongo['ZILLIZ_CLOUD_API_KEY']
 
-COLLECTION_NAME= "ey_data_500"          #creds_mongo['COLLECTION_NAME']
+COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
 DENSE_EMBEDDING_MODEL = "jinaai/jina-embeddings-v2-base-en"
 SPARSE_EMBEDDING_MODEL = "Qdrant/bm42-all-minilm-l6-v2-attentions"
 LLM_MODEL = "gpt-4o"
