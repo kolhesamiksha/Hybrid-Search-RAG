@@ -14,12 +14,13 @@ from github import Github
 import pandas as pd
 import base64
 
+from src.utils.utils import decrypt_pass
 from src.utils.get_insert_mongo_data import format_creds_mongo
 
 # logger = Logger()
 creds_mongo = format_creds_mongo()
 
-GTHUB_TOKEN = creds_mongo['GITHUB_TOKEN']
+GTHUB_TOKEN = decrypt_pass(creds_mongo['GITHUB_TOKEN'])
 
 def initialize_session_state():
     if "history" not in st.session_state:
