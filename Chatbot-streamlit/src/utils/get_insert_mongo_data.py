@@ -5,7 +5,7 @@ CONNECTION_STRING = os.getenv('CONNECTION_NAME')
 
 def get_creds_from_mongo(connection_string):
     dbname = get_database(connection_string)
-    collection_name = dbname["retrieval_creds"]
+    collection_name = dbname["credentials"]
     item_details = collection_name.find()
     return item_details
 
