@@ -5,10 +5,10 @@ CONNECTION_STRING = os.getenv('CONNECTION_NAME')
 
 def get_database(connection_string):
    client = MongoClient(connection_string)
-   return client['advance_rag_credentials']
+   return client['Hybrid-search-rag']
 
 def create_collection(dbname):
-    collection_name = dbname["retrieval_creds"]
+    collection_name = dbname["credentials"]
     return collection_name
 
 def insert_data(collection_name):
