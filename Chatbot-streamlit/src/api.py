@@ -41,6 +41,9 @@ from .schema import PredictSchema
 #mongo modules
 from src.utils.get_insert_mongo_data import format_creds_mongo
 
+#API Keys Decryption
+from src.utils.utils import decrypt_pass
+
 #Logutils
 import logging
 from src.utils.logutils import Logger
@@ -55,9 +58,9 @@ rag_router = APIRouter()
 
 creds_mongo = format_creds_mongo()
 
-os.environ['GROQ_API_KEY'] = creds_mongo['GROQ_API_KEY']
+os.environ['GROQ_API_KEY'] = decrypt_pass(creds_mongo['GROQ_API_KEY'])
 ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
-ZILLIZ_CLOUD_API_KEY = creds_mongo['ZILLIZ_CLOUD_API_KEY']
+ZILLIZ_CLOUD_API_KEY = decrypt_pass(creds_mongo['ZILLIZ_CLOUD_API_KEY'])
 
 COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
 DENSE_EMBEDDING_MODEL = "jinaai/jina-embeddings-v2-base-en"
@@ -340,7 +343,9 @@ def chatbot(question, formatted_context, retrieved_history):
     )
     try:
         with get_openai_callback() as cb:
+            print("Before Chain")
             response = chain.invoke({"context":formatted_context,"chat_history":history, "question": question, "MASTER_PROMPT": MASTER_PROMPT, "LLAMA3_ASSISTANT_TAG":LLAMA3_ASSISTANT_TAG, "LLAMA3_USER_TAG":LLAMA3_USER_TAG, "LLAMA3_SYSTEM_TAG":LLAMA3_SYSTEM_TAG},{"callbacks": [cb]})
+            print("After Chain")
             result, token_usage = format_result(response)
             # total_cost = calculate_cost(token_usage)
             return (result, token_usage)
