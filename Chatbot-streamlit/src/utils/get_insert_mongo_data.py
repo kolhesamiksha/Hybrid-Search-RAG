@@ -25,4 +25,6 @@ def format_creds_mongo():
             mongo_dict['GITHUB_TOKEN'] = items['cred_values']
         if items['cred_name']=="COLLECTION_NAME":
             mongo_dict['COLLECTION_NAME'] = items['cred_values']
+        if items['cred_name']=="OPENAI_API_BASE":
+            mongo_dict['OPENAI_API_BASE'] = items['cred_values']
     return mongo_dict
