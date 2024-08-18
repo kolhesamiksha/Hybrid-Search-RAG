@@ -213,6 +213,14 @@ def load_collection(collection_name):
     milvus_collection.load()
     return milvus_collection
 
+def drop_collection():
+    from pymilvus import utility
+    connections.connect(
+        uri=ZILLIZ_CLOUD_URI,
+        token=ZILLIZ_CLOUD_API_KEY
+    )
+    utility.drop_collection("reranking_docs")
+
 # Hybrid Search
 def milvus_hybrid_search(question, expr):
     milvus_collection = load_collection(COLLECTION_NAME)
@@ -241,15 +249,22 @@ def milvus_hybrid_search(question, expr):
     return output
 
 # Reranker
-def faiss_store_docs_to_rerank(docs_to_rerank):
+def faiss_store_docs_to_rerank(docs_to_rerank, search_params:dict):
     embeddings = retrieval_embedding_model(model_name=DENSE_EMBEDDING_MODEL)
-    retriever = FAISS.from_documents(docs_to_rerank, embeddings)
+    #retriever = FAISS.from_documents(docs_to_rerank, embeddings)
+    retriever = Milvus.from_documents(
+        docs_to_rerank,
+        embeddings,
+        connection_args={"uri": ZILLIZ_CLOUD_URI, 'token': ZILLIZ_CLOUD_API_KEY, 'secure': True},
+        collection_name = "reranking_docs", ## custom collection name 
+        search_params = search_params,
+    )
     return retriever
 
 def Reranker(question, docs_to_rerank) -> List:
     # FlashrankRerank.update_forward_refs()
     compressor = FlashrankRerank()
-    retriever = faiss_store_docs_to_rerank(docs_to_rerank)
+    retriever = faiss_store_docs_to_rerank(docs_to_rerank, DENSE_SEARCH_PARAMS)
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=compressor, base_retriever=retriever.as_retriever(search_kwargs={"k": 3})
     )
@@ -257,6 +272,7 @@ def Reranker(question, docs_to_rerank) -> List:
     compressed_docs = compression_retriever.invoke(
         question
     )
+    drop_collection()
     return compressed_docs
 
 def format_document(doc: Document) -> str:
@@ -366,11 +382,11 @@ def advance_rag_chatbot(question, history):
             for query in expanded_queries:
                 output = milvus_hybrid_search(question, expr="")
                 combined_results.extend(output)
-            # reranked_docs = Reranker(question, combined_results)
-            formatted_context = format_docs(combined_results)
+            reranked_docs = Reranker(question, combined_results)
+            formatted_context = format_docs(reranked_docs)
             response = chatbot(question, formatted_context, history)
             end_time = time.time() - st_time
-            return (response, end_time, combined_results)
+            return (response, end_time, reranked_docs)
     except Exception as e:
         print(f"ERROR: {traceback.format_exc()}")
         end_time = time.time() - st_time
