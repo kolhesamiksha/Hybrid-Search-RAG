@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 import os
 
-CONNECTION_STRING = os.getenv('CONNECTION_NAME')
+CONNECTION_STRING = st.secrets["CONNECTION_NAME"]
 
 def get_database(connection_string):
    client = MongoClient(connection_string)
