@@ -1,5 +1,6 @@
 from .mongo_init import get_database
 import os
+import streamlit as st
 
 CONNECTION_STRING = st.secrets["CONNECTION_NAME"]
 
