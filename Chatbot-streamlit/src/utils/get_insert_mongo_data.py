@@ -1,7 +1,7 @@
 from .mongo_init import get_database
 import os
 
-CONNECTION_STRING = os.getenv('CONNECTION_NAME')
+CONNECTION_STRING = st.secrets["CONNECTION_NAME"]
 
 def get_creds_from_mongo(connection_string):
     dbname = get_database(connection_string)
