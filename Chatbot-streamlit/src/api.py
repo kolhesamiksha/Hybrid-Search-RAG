@@ -63,6 +63,7 @@ ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
 ZILLIZ_CLOUD_API_KEY = decrypt_pass(creds_mongo['ZILLIZ_CLOUD_API_KEY'])
 
 COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
+LLM_MODEL_NAME = "llama-3.1-70b-versatile"
 DENSE_EMBEDDING_MODEL = "jinaai/jina-embeddings-v2-base-en"
 SPARSE_EMBEDDING_MODEL = "Qdrant/bm42-all-minilm-l6-v2-attentions"
 LLM_MODEL = "gpt-4o"
@@ -153,7 +154,7 @@ def initialise_vector_store(vector_field:str, search_params:dict):
     return vector_store
 
 def initialise_llm_model(llm_model):
-    llm_model = ChatGroq(model="llama-3.1-70b-versatile",api_key = GROQ_API_KEY, temperature=0.0, max_retries=2)
+    llm_model = ChatGroq(model=LLM_MODEL_NAME,api_key = GROQ_API_KEY, temperature=0.0, max_retries=2)
     return llm_model
 
 # Self Query Retriever
