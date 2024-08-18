@@ -44,7 +44,7 @@ def insert_data(collection_name):
 
     item_6 = {
     "_id" : 6,
-    "cred_name" : "COLLECTION_NAME",
+    "cred_name" : "OPENAI_API_BASE",
     "cred_values" : ""
     }
     collection_name.insert_one(item_6)                                 #insert_many([item_1,item_2,item_3,item_4])
