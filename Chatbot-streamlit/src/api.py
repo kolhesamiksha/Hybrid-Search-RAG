@@ -366,7 +366,7 @@ def advance_rag_chatbot(question, history):
             for query in expanded_queries:
                 output = milvus_hybrid_search(question, expr="")
                 combined_results.extend(output)
-            reranked_docs = Reranker(question, combined_results)
+            # reranked_docs = Reranker(question, combined_results)
             formatted_context = format_docs(reranked_docs)
             response = chatbot(question, formatted_context, history)
             end_time = time.time() - st_time
