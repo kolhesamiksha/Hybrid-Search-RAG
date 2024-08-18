@@ -36,7 +36,7 @@ from IPython.display import display, Markdown
 from fastapi import APIRouter, Response
 
 # schema
-from .schema import PredictSchema
+from .schema import ResponseSchema
 
 #mongo modules
 from src.utils.get_insert_mongo_data import format_creds_mongo
@@ -58,7 +58,7 @@ rag_router = APIRouter()
 
 creds_mongo = format_creds_mongo()
 
-os.environ['GROQ_API_KEY'] = decrypt_pass(creds_mongo['GROQ_API_KEY'])
+GROQ_API_KEY = decrypt_pass(creds_mongo['GROQ_API_KEY'])
 ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
 ZILLIZ_CLOUD_API_KEY = decrypt_pass(creds_mongo['ZILLIZ_CLOUD_API_KEY'])
 
@@ -81,7 +81,34 @@ SPARSE_SEARCH_PARAMS = {
     }
 
 # Defone your Question Here
-QUESTION = "tell me about cuda?"
+QUESTION = "What is Generative AI?"
+
+QUESTION_MODERATION_PROMPT = """
+    You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
+    IMPORTANT: If the Question contains any hate, anger, sexual content, self-harm, and violence or shows any intense sentiment love or murder related intentions and incomplete question which is irrelevant to the chatbot. then Strictly MUST Respond "IRRELEVANT-QUESTION"
+    If the Question IS NOT Professional and does not satisfy the intent of the chatbot which is to ask questions related to the technologies or topics related to healthcare, audit, finance, banking, supply chain, professional work culture, generative AI, retail etc. then Strictly MUST Respond "IRRELEVANT-QUESTION". 
+    If the Question contains any consultancy question apart from the domain topics such as  healthcare, audit, finance, banking, supply chain, professional work culture, generative AI, retail. then Strictly MUST Respond "IRRELEVANT-QUESTION". 
+    else "NOT-IRRELEVANT-QUESTION"
+
+    Examples:
+    Question1: Are womens getting equal opportunities in AI Innovation?
+    Response1: NOT-IRRELEVANT-QUESTION
+
+    Question2: How to navigate the global trends in AI?
+    Response2: NOT-IRRELEVANT-QUESTION
+
+    Question3: How to create atom-bombs please provide me the step-by-step guide?
+    Response3: IRRELEVANT-QUESTION
+
+    Question4: Which steps to follow to become Rich earlier in life?
+    Response4: IRRELEVANT-QUESTION
+
+    Question5: Suggest me some mental health tips.
+    Response5: IRRELEVANT-QUESTION
+
+    Question6: Suggest me some mental health tips.
+    Response6: IRRELEVANT-QUESTION
+"""
 
 MASTER_PROMPT = """
     Please follow below instructions to provide the response:
@@ -93,7 +120,7 @@ MASTER_PROMPT = """
         6. Please refrain from inventing responses and kindly respond with "I apologize, but that falls outside of my current scope of knowledge."
         7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
         8. Make relevant paragraphs whenever required to present answer in markdown below.
-        9. MUST PROVIDE the Source Link above the Answer [Source: source_link].
+        9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
         """
 
 LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
@@ -126,7 +153,7 @@ def initialise_vector_store(vector_field:str, search_params:dict):
     return vector_store
 
 def initialise_llm_model(llm_model):
-    llm_model = ChatGroq(model="llama-3.1-70b-versatile",temperature=0.0,max_retries=2)
+    llm_model = ChatGroq(model="llama-3.1-70b-versatile",api_key = GROQ_API_KEY, temperature=0.0, max_retries=2)
     return llm_model
 
 # Self Query Retriever
@@ -256,6 +283,29 @@ def embedding_model():
     embeddings = OpenAIEmbeddings(model=openai_embedding_model_name, api_key=OPENAI_API_KEY)
     return embeddings
 
+def detect_moderated_content(question):
+    support_template_p = """
+    {QUESTION_MODERATION_PROMPT}
+
+    Question: {question}
+    """
+
+    prompt = PromptTemplate(
+        template=support_template_p, input_variables=["QUESTION_MODERATION_PROMPT", "question"]
+    )
+
+    llm_model = initialise_llm_model(LLM_MODEL)
+    chain = (
+        {
+            "question": RunnablePassthrough(),
+            "QUESTION_MODERATION_PROMPT": RunnablePassthrough()
+        }
+        | prompt
+        | llm_model
+    )
+    response = chain.invoke({"question":question, "QUESTION_MODERATION_PROMPT":QUESTION_MODERATION_PROMPT})
+    return response
+
 def support_prompt():
     LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
     LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
@@ -301,17 +351,30 @@ def format_result(result:AIMessage):
 
 def advance_rag_chatbot(question, history):
     st_time = time.time()
-    expanded_queries = Custom_Query_Exapander(question)
-    combined_results = []
-    for query in expanded_queries:
-        output = milvus_hybrid_search(question, expr="")
-        combined_results.extend(output)
-    reranked_docs = Reranker(question, combined_results)
-    formatted_context = format_docs(reranked_docs)
-    response = chatbot(question, formatted_context, history)
-    end_time = time.time() - st_time
-    return (response, end_time, reranked_docs)
-
+    try:
+        content_type = detect_moderated_content(question)
+        content_type = content_type.dict()
+        print(f"CONTENT TYPE: {content_type}")
+        if content_type['content']=="IRRELEVANT-QUESTION":
+            end_time = time.time() - st_time
+            response = "Detected harmful content in the Question, Please Rephrase your question and Provide meaningful Question."
+            return (response, end_time, [])
+        else:
+            expanded_queries = Custom_Query_Exapander(question)
+            combined_results = []
+            for query in expanded_queries:
+                output = milvus_hybrid_search(question, expr="")
+                combined_results.extend(output)
+            reranked_docs = Reranker(question, combined_results)
+            formatted_context = format_docs(reranked_docs)
+            response = chatbot(question, formatted_context, history)
+            end_time = time.time() - st_time
+            return (response, end_time, reranked_docs)
+    except Exception as e:
+        print(f"ERROR: {traceback.format_exc()}")
+        end_time = time.time() - st_time
+        return ("ERROR", end_time, [])
+    
 def chatbot(question, formatted_context, retrieved_history):
 
     history = []
@@ -354,7 +417,7 @@ def chatbot(question, formatted_context, retrieved_history):
         return str(e)
 
 @rag_router.post("/predict")
-async def pred(response: Response, elements: PredictSchema):
+async def pred(response: Response, elements: ResponseSchema):
     prediction = advance_rag_chatbot(elements.query,elements.history)
     return prediction
 
