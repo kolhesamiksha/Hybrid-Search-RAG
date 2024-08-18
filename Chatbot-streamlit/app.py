@@ -13,14 +13,10 @@ from langchain_core.messages import HumanMessage, AIMessage
 from github import Github
 import pandas as pd
 import base64
+from typing import List
 
-from src.utils.utils import decrypt_pass
-from src.utils.get_insert_mongo_data import format_creds_mongo
-
-# logger = Logger()
-creds_mongo = format_creds_mongo()
-
-GTHUB_TOKEN = decrypt_pass(creds_mongo['GITHUB_TOKEN'])
+from src.utils.utils import save_history_to_github
+from src.utils.utils import rag_evaluation
 
 def initialize_session_state():
     if "history" not in st.session_state:
@@ -69,6 +65,12 @@ def message_func(text, is_user=False):
         unsafe_allow_html=True
     )
 
+def prepare_context(context) -> List[List[str]]:
+    prepared_lst = []
+    for doc in context:
+        prepared_lst.append(doc.page_content)
+    return [prepared_lst]
+
 def conversation_chat(query, history):
     # logger.info(f"Query {query}")
     # logger.info(f"History {history}")
@@ -81,25 +83,15 @@ def conversation_chat(query, history):
     response = advance_rag_chatbot(query['query'], history)
     print(f"APP RESPONSE: {response}")
     if isinstance(response[0], str):
+        metrices = {}
         pass
     else:
         print("Not harmful content")
+        context = prepare_context(response[2])
+        metrices = rag_evaluation([query['query']], [response[0][0]],context)
         save_history_to_github(query['query'], response)
-    # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
 
-    return response
-
-def save_history_to_github(query, response):
-    g = Github(GTHUB_TOKEN)
-    repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
-    contents = repo.get_contents('Chatbot-streamlit/chat_history/chat_history.csv')
-    decoded_content = base64.b64decode(contents.content)
-    csv_file = io.BytesIO(decoded_content)
-    df = pd.read_csv(csv_file)
-    new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[2]]})
-    concat_df = pd.concat([df, new_data], ignore_index=True)
-    updated_csv = concat_df.to_csv(index=False)
-    repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
+    return response, metrices
 
 def main():
     st.set_page_config(
@@ -265,7 +257,7 @@ def main():
                 'query': user_input
             }
             try:
-                output  = conversation_chat(
+                output, metrices  = conversation_chat(
                     data, st.session_state["history"]
                 )
                 if isinstance(output[0], str):
@@ -287,7 +279,7 @@ def main():
             for i in range(len(st.session_state["generated"])):
                 with st.container():
                     message_func(st.session_state["past"][i], is_user=True)
-                    if 'output' in locals():
+                    if 'output' in locals() and 'metrices' in locals():
                         if isinstance(output[0], str):
                             message_func(
                                 f'<strong>Latency:</strong> {output[1]}s<br>'
@@ -297,6 +289,10 @@ def main():
                         else:
                             message_func(
                                 f'<strong>Latency:</strong> {output[1]}s<br>'
+                                f'<strong>Faithfullness:</strong> {metrices["faithfulness"]}<br>'
+                                f'<strong>Context_Utilization:</strong> {metrices["context_utilization"]}<br>'
+                                f'<strong>Harmfulness:</strong> {metrices["harmfulness"]}<br>'
+                                f'<strong>Correctness:</strong> {metrices["correctness"]}<br>'
                                 f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
                                 f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
                                 f'{st.session_state["generated"][i]}',
