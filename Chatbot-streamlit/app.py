@@ -79,7 +79,12 @@ def conversation_chat(query, history):
     # }
     #response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
     response = advance_rag_chatbot(query['query'], history)
-    save_history_to_github(query['query'], response)
+    print(f"APP RESPONSE: {response}")
+    if isinstance(response[0], str):
+        pass
+    else:
+        print("Not harmful content")
+        save_history_to_github(query['query'], response)
     # history.append((query, result[0][0])) #history.append(HumanMessage(content=query)), history.append(AIMessage(content=result))
 
     return response
@@ -263,12 +268,18 @@ def main():
                 output  = conversation_chat(
                     data, st.session_state["history"]
                 )
+                if isinstance(output[0], str):
+                    print("Inside isinstance str")
+                    st.session_state["history"].append([user_input, output[0]])
+                    st.session_state["past"].append(user_input)
+                    st.session_state["generated"].append(output[0])
+                else:
+                    st.session_state["history"].append([user_input, output[0][0]])
+                    # st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
+                    st.session_state["past"].append(user_input)
+                    st.session_state["generated"].append(output[0][0])
             except Exception as e:
                 st.session_state["generated"].append('There is some issue with API Key, Usage Limit exceeds for the Day!!')
-            st.session_state["history"].append([user_input, output[0][0]])
-            # st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
-            st.session_state["past"].append(user_input)
-            st.session_state["generated"].append(output[0][0])
 
     if st.session_state["generated"]:
         print(st.session_state["generated"])
@@ -277,13 +288,20 @@ def main():
                 with st.container():
                     message_func(st.session_state["past"][i], is_user=True)
                     if 'output' in locals():
-                        message_func(
-                            f'<strong>Latency:</strong> {output[1]}s<br>'
-                            f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
-                            f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
-                            f'{st.session_state["generated"][i]}',
-                            is_user=False
-                        )
+                        if isinstance(output[0], str):
+                            message_func(
+                                f'<strong>Latency:</strong> {output[1]}s<br>'
+                                f'{st.session_state["generated"][i]}',
+                                is_user=False
+                            )
+                        else:
+                            message_func(
+                                f'<strong>Latency:</strong> {output[1]}s<br>'
+                                f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
+                                f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
+                                f'{st.session_state["generated"][i]}',
+                                is_user=False
+                            )
                         #message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
 
 if __name__ == "__main__":
