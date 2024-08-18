@@ -1,4 +1,5 @@
 import hashlib
+import io
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
@@ -39,16 +40,19 @@ GTHUB_TOKEN = decrypt_pass(creds_mongo['GITHUB_TOKEN'])
 GROQ_API_KEY = decrypt_pass(creds_mongo['GROQ_API_KEY'])
 
 def save_history_to_github(query, response):
-    g = Github(GTHUB_TOKEN)
-    repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
-    contents = repo.get_contents('Chatbot-streamlit/chat_history/chat_history.csv')
-    decoded_content = base64.b64decode(contents.content)
-    csv_file = io.BytesIO(decoded_content)
-    df = pd.read_csv(csv_file)
-    new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[2]]})
-    concat_df = pd.concat([df, new_data], ignore_index=True)
-    updated_csv = concat_df.to_csv(index=False)
-    repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
+    try:
+        g = Github(GTHUB_TOKEN)
+        repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
+        contents = repo.get_contents('Chatbot-streamlit/chat_history/chat_history.csv')
+        decoded_content = base64.b64decode(contents.content)
+        csv_file = io.BytesIO(decoded_content)
+        df = pd.read_csv(csv_file)
+        new_data = pd.DataFrame({'Query': [query], 'Answer': [response[0][0]], 'Context':[response[2]]})
+        concat_df = pd.concat([df, new_data], ignore_index=True)
+        updated_csv = concat_df.to_csv(index=False)
+        repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
+    except Exception as e:
+        print(traceback.format_exc())
 
 def validate_column_dtypes(ds: Dataset):
     for column_names in ["question", "answer", "ground_truth"]:
