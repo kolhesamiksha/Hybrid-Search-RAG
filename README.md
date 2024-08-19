@@ -179,9 +179,9 @@ To Run the Streamlit Application Locally Follow below Instructions to Run the Ap
 This Will open a streamlit application where you can ask your questions and get the responses via API you exposed.
 
 ## Sample Output
-![chatbot_img2](https://github.com/user-attachments/assets/69560a5b-53f0-4f18-a14e-13a27442e659)
-![chtbot_img3](https://github.com/user-attachments/assets/68838c76-fbdb-431a-a4c8-6d4bdd3e82a1)
-![chatbot_img1](https://github.com/user-attachments/assets/5d2c5328-17ca-4762-af67-4646d9106d5f)
+![chatbot_img_5](https://github.com/user-attachments/assets/7f407d47-7ea6-492a-82bf-ff8d1b69b08c)
+![chatbot_img_6](https://github.com/user-attachments/assets/ba6b6639-aef7-45f8-81b5-e7b9af6cf3e5)
+
 
 
 ## Future Enhancements
