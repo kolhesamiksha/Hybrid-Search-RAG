@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import os
 import streamlit as st
 
-CONNECTION_STRING = ""
+CONNECTION_STRING = st.secrets["CONNECTION_NAME"]
 
 def get_database(connection_string):
    client = MongoClient(connection_string)
