@@ -182,7 +182,5 @@ This Will open a streamlit application where you can ask your questions and get 
 ![chatbot_img_7](https://github.com/user-attachments/assets/e23b4ede-9e60-4677-9589-d2702a15c837)
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
-
-
-**for more details**
+📫 Get in Touch
 Happy to Connect!! [Samiksha Kolhe](https://www.linkedin.com/in/samiksha-kolhe25701/)
