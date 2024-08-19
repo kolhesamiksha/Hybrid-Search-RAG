@@ -1,7 +1,5 @@
 # Hybrid-Search-RAG-Chatbot
 
-## About
-
 This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.   
 
 ![advance-rag-workflow](https://github.com/user-attachments/assets/f66d9c12-5356-4b48-8a2e-1a4551181f57)
