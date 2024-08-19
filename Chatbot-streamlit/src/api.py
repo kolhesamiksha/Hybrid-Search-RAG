@@ -122,6 +122,7 @@ MASTER_PROMPT = """
         7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
         8. Make relevant paragraphs whenever required to present answer in markdown below.
         9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
+        10. Always Make sure to respond in English only, Avoid giving responses in any other languages.
         """
 
 LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
