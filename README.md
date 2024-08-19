@@ -2,7 +2,7 @@
 
 ## About
 
-This Application is builted using Advance RAG Techniques. Trained over 2k websites scraped under the topics domain sitemap  
+This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.   
 
 ![advance-rag-workflow](https://github.com/user-attachments/assets/f66d9c12-5356-4b48-8a2e-1a4551181f57)
 
@@ -12,7 +12,7 @@ https://comparable-clarie-adsds-226b08fd.koyeb.app/
 
 ### Deployed Streamlit app
 
-https://hybrid-search-rag-sam.streamlit.app/
+https://hybrid-search-rag-chatbot-sam.streamlit.app/
 
 ## Approach: RAG Workflow Stratergy
 
@@ -23,8 +23,8 @@ The approaches Followed for building RAG pipeline is discussed below
 The Website was a rich source of documents in everydomain like AI, Supply chain, Digital, Cybersecurity and Various Informational Blogs and Use-cases Discussed. Most of the websites have a common web interface and HTML Codebase which was suitable to built an automation using For Webscraping. 
 1. Used Sitemap of Topics under ey_in domain.
 1. Analyse the Structure of the Websites.
-2. Extracted metadata required further for metadata filtering or Self-Query Retriever to post-retrieve for better performance i.e. Author name, related topics, pdf_links. Pdf links added because most of the blogs contains PDF for detailed information. in future content can be extracted and used for training of the chatbot for more information.
-3. Built an Automation to scrape and extract 2k websites.
+2. Extracted metadata required further for metadata filtering or Self-Query Retriever to post-retrieval for better performance i.e. Author name, related topics, pdf_links. Pdf links added because most of the blogs contains PDF for detailed information. in future content can be extracted and used for training of the chatbot for more information.
+3. Built an Automation to scrape and extract 2k websites using unstructuredURLLoader by langchain.
 
 #### 2. Semantic Chunking Techniques:
 
