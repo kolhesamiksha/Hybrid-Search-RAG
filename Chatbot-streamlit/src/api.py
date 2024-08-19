@@ -382,11 +382,12 @@ def advance_rag_chatbot(question, history):
             for query in expanded_queries:
                 output = milvus_hybrid_search(question, expr="")
                 combined_results.extend(output)
-            reranked_docs = Reranker(question, combined_results)
-            formatted_context = format_docs(reranked_docs)
+            combined_results = combined_results[:3]
+            #reranked_docs = Reranker(question, combined_results)
+            formatted_context = format_docs(combined_results)
             response = chatbot(question, formatted_context, history)
             end_time = time.time() - st_time
-            return (response, end_time, reranked_docs)
+            return (response, end_time, combined_results)
     except Exception as e:
         print(f"ERROR: {traceback.format_exc()}")
         end_time = time.time() - st_time
