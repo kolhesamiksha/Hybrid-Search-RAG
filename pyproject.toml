@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "webrag"
+version = "0.0.1"
+description = "A Hybrid-search RAG repository"
+authors = ["Samiksha Kolhe <kolhesamiksha25@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/kolhesamiksha/Hybrid-Search-RAG"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+numpy = "^1.24.0"
+pandas = "^2.2.3"
+streamlit = "^1.41.1"
+streamlit-chat = "^0.1.1"
+streamlit-elements = "^0.1.0"
+langchain = "0.2.0"
+langchain-community = "0.2.0"
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.5.0"
+flake8 = "^6.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+black = "^23.9b0"
+
+[tool.poetry.group.codespell.dependencies]
+codespell = "^2.2.0"
+
+[tool.poetry.group.typing.dependencies]
+mypy = "^1.5.0"
+
+[tool.codespell]
+skip = '.git,*.pdf,*.svg,*.pdf,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig'
+# Ignore latin etc
+ignore-regex = '.*(Stati Uniti|Tense=Pres).*'
+# whats is a typo but used frequently in queries so kept as is
+# aapply - async apply
+# unsecure - typo but part of API, decided to not bother for now
+ignore-words-list = 'momento,collison,ned,foor,reworkd,parth,whats,aapply,mysogyny,unsecure,damon,crate,aadd,symbl,precesses,accademia,nin,cann'
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+extend-exclude = [
+    "docs/docs/expression_language/why.ipynb", # TODO: look into why linter errors
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/{cookbook,docs}/*" = [
+    "E402", # allow imports to appear anywhere in docs
+    "F401", # allow "imported but unused" example code
+    "F811", # allow re-importing the same module, so that cells can stay independent
+    "F841", # allow assignments to variables that are never read -- it's example code
+]
