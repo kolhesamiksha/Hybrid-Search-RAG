@@ -1,3 +1,5 @@
+from langchain_core.prompts.prompt import PromptTemplate
+
 QUESTION_MODERATION_PROMPT = """
     You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
     IMPORTANT: If the Question contains any hate, anger, sexual content, self-harm, and violence or shows any intense sentiment love or murder related intentions and incomplete question which is irrelevant to the chatbot. then Strictly MUST Respond "IRRELEVANT-QUESTION"
@@ -42,3 +44,29 @@ MASTER_PROMPT = """
 LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
 LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
 LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+
+def support_prompt():
+    LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
+    LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
+    LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+
+    support_template = """
+        {LLAMA3_SYSTEM_TAG}
+        {MASTER_PROMPT}
+        {LLAMA3_USER_TAG}
+
+        Use the following context to answer the question.
+        CONTEXT:
+        {context}
+    
+        CHAT HISTORY:
+        {chat_history}
+
+        Question: {question}
+        {LLAMA3_ASSISTANT_TAG}
+        """
+
+    QA_PROMPT = PromptTemplate(
+        template=support_template, input_variables=["LLAMA3_SYSTEM_TAG","LLAMA3_USER_TAG","LLAMA3_ASSISTANT_TAG","MASTER_PROMPT", "context", "chat_history", "question"]
+    )
+    return QA_PROMPT
