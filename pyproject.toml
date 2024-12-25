@@ -7,14 +7,34 @@ readme = "README.md"
 repository = "https://github.com/kolhesamiksha/Hybrid-Search-RAG"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
-numpy = "^1.24.0"
+python = ">=3.10,<4.0"
+numpy = ">=1.22.4,<3"
 pandas = "^2.2.3"
-streamlit = "^1.41.1"
+streamlit = [
+    { version = "^1.41.1", python = ">=3.9,<3.9.7 || >3.9.7,<4.0" }
+]
 streamlit-chat = "^0.1.1"
 streamlit-elements = "^0.1.0"
-langchain = "0.2.0"
-langchain-community = "0.2.0"
+langchain = "^0.3.13"
+langchain-community = "^0.3.13"
+fastembed = "^0.5.0"
+langchain-core = "^0.3.28"
+langchain-milvus = "^0.1.7"
+langchain-openai = "^0.2.14"
+langchain-groq = "^0.2.2"
+openai = "^1.58.1"
+tiktoken = "^0.8.0"
+pymilvus = "^2.5.1"
+faiss-cpu = "^1.9.0.post1"
+fastapi = "^0.115.6"
+uvicorn = "^0.34.0"
+pycryptodome = "^3.21.0"
+ragas = "^0.2.9"
+datasets = "^3.2.0"
+flashrank = "^0.2.9"
+pygithub = "^2.5.0"
+lark = "^1.2.2"
+pymongo = { version = "3.11", extras = ["srv"] }
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.5.0"
@@ -46,7 +66,7 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/{cookbook,docs}/*" = [
+"**/{docs}/*" = [
     "E402", # allow imports to appear anywhere in docs
     "F401", # allow "imported but unused" example code
     "F811", # allow re-importing the same module, so that cells can stay independent
