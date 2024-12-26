@@ -1,79 +1,51 @@
 # Query Expansion modules
 import os
-from typing import List, Dict, Literal, Any, Optional, Tuple
-from langchain.chains.query_constructor.base import AttributeInfo
-from langchain.retrievers.self_query.base import SelfQueryRetriever
-from langchain_core.runnables import RunnablePassthrough
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
-from langchain_community.vectorstores import Milvus
-from langchain_openai import ChatOpenAI
-from langchain_groq import ChatGroq
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import time
+import traceback
+from datetime import datetime
+
 from langchain_core.documents import Document
-from pymilvus import Collection, utility, AnnSearchRequest, RRFRanker, connections
-
-
-#Custom modules
-from src.utils.custom_utils import SparseFastEmbedEmbeddings, CustomMultiQueryRetriever
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
-
-# Reranker modules
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain_community.document_compressors.flashrank_rerank import FlashrankRerank
-from langchain_openai import ChatOpenAI
-from langchain_community.vectorstores import FAISS
 
 # LECL chain modules
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda, RunnableParallel
 from langchain_core.prompts.prompt import PromptTemplate
-from langchain_core.prompts import BasePromptTemplate
 from langchain.callbacks import get_openai_callback
 from langchain_core.messages import HumanMessage, AIMessage
-from IPython.display import display, Markdown
 
 # FastAPI modules
 from fastapi import APIRouter, Response
 
 # schema
-from .schema import ResponseSchema
-
-#mongo modules
-from src.utils.get_insert_mongo_data import format_creds_mongo
-
-#API Keys Decryption
-from src.utils.utils import decrypt_pass
+from hybrid_rag.src.schema import ResponseSchema
 
 #Logutils
-import logging
-from src.utils.logutils import Logger
-import traceback
-from datetime import datetime
+from hybrid_rag.src.utils.logutils import Logger
 
-from hybrid_rag.src.prompts.prompt import QUESTION_MODERATION_PROMPT, MASTER_PROMPT, LLAMA3_SYSTEM_TAG, LLAMA3_USER_TAG, LLAMA3_ASSISTANT_TAG
-from hybrid_rag.src.models.retriever_model.models import sparse_embedding_model, dense_embedding_model, retrieval_embedding_model
-from hybrid_rag.src.models.llm_model.model import initialise_llm_model
-from hybrid_rag.src.vectordb.zillinz_milvus import initialise_vector_store
-from hybrid_rag.src.prompts.prompt import support_prompt
+from hybrid_rag.src.prompts.prompt import QUESTION_MODERATION_PROMPT, SupportPromptGenerator
+from hybrid_rag.src.advance_rag.self_query_retriever import SelfQueryRetrieval
+from hybrid_rag.src.advance_rag.query_expander import CustomQueryExpander
+from hybrid_rag.src.advance_rag.reranker import DocumentReranker
+from hybrid_rag.src.advance_rag.hybrid_search import MilvusHybridSearch
+from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
+from hybrid_rag.src.utils.decrypter import AESDecryptor
+from hybrid_rag.src.utils.get_mongo_data import MongoCredentialManager
+from hybrid_rag.src.moderation.question_moderator import QuestionModerator
+#TODO:add Logger & exceptions
 
 # st.set_option('global.cache.persist', True)
-# current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-# logger = Logger(f'logs/frontend_logs_{current_datetime}.log')
+current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+logger = Logger().get_logger()
 
 rag_router = APIRouter()
 
-creds_mongo = format_creds_mongo()
-
-GROQ_API_KEY = decrypt_pass(creds_mongo['GROQ_API_KEY'])
-ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']
-ZILLIZ_CLOUD_API_KEY = decrypt_pass(creds_mongo['ZILLIZ_CLOUD_API_KEY'])
-
-COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
+#dataclass essentials from User
 LLM_MODEL_NAME = "llama-3.1-70b-versatile"
 DENSE_EMBEDDING_MODEL = "jinaai/jina-embeddings-v2-base-en"
 SPARSE_EMBEDDING_MODEL = "Qdrant/bm42-all-minilm-l6-v2-attentions"
-LLM_MODEL = "gpt-4o"
-TEMPERATURE = 0.0
 NO_HISTORY = 2
 langchain=True
 DENSE_SEARCH_PARAMS = {
@@ -86,127 +58,38 @@ SPARSE_SEARCH_PARAMS = {
         "index_type": "SPARSE_INVERTED_INDEX",
         "metric_type": "IP",
     }
-
 # Defone your Question Here
 QUESTION = "What is Generative AI?"
 
-# Self Query Retriever
-def Self_query_retrieval(question):
-    llm_model = initialise_llm_model(LLM_MODEL)
-    vector_store = initialise_vector_store("dense_vector", DENSE_SEARCH_PARAMS)
-    metadata_field_info = [
-        AttributeInfo(
-            name="source_link",
-            description="Defines the source link of the file.",
-            type="string",
-        ),
-        AttributeInfo(
-            name="author_name",
-            description="the author of the file.",
-            type="string",
-        ),
-        AttributeInfo(
-            name="related_topics",
-            description="The topics related to the file.",
-            type="array",
-        ),
-        AttributeInfo(
-            name="pdf_links", 
-            description="The PDF links which contains extra information about the file.", 
-            type="array"
-        ),
-    ]
-    document_content_description = "Brief summary of a file."
-    selfq_retriever = SelfQueryRetriever.from_llm(
-        llm_model, vector_store, document_content_description, metadata_field_info, verbose=True
-    )
-    structured_query = selfq_retriever.query_constructor.invoke({"query": question})
-    new_query, search_kwargs = selfq_retriever._prepare_query(query, structured_query)
-    return new_query, search_kwargs
+CONNECTION_STRING = "mongodb+srv://kolhesamiksha25:yRxcIbqRBJORdwFm@cluster0.p3zf3zw.mongodb.net/"
+MONGO_COLLECTION_NAME= "Hybrid-search-rag"
+DB_NAME = "credentials"
 
-def Custom_Query_Exapander(question) -> List:
-    llm_model = initialise_llm_model(LLM_MODEL)
-    vector_store = initialise_vector_store("dense_vector", DENSE_SEARCH_PARAMS)
-    retriever_obj = CustomMultiQueryRetriever.from_llm(
-        retriever=vector_store.as_retriever(),
-        llm = llm_model,
-        include_original = True
-    )
-    run_manager = CallbackManagerForRetrieverRun(run_id="example_run", handlers=[], inheritable_handlers={})
-    multiq_queries = retriever_obj.generate_queries(question, run_manager)
-    return multiq_queries
+TEMPERATURE = 0.0
+TOP_P = 0.3
+FREQUENCY_PENALTY = 1.0
 
-def load_collection(collection_name):
-    connections.connect(
-        uri=ZILLIZ_CLOUD_URI,
-        token=ZILLIZ_CLOUD_API_KEY
-    )
+HYBRID_SEARCH_TOPK = 6
+RERANK_TOPK = 3
 
-    milvus_collection = Collection(name=collection_name)
-    milvus_collection.load()
-    return milvus_collection
+mongoCredManager = MongoCredentialManager(CONNECTION_STRING, MONGO_COLLECTION_NAME, DB_NAME)
+aesDecryptor = AESDecryptor()
 
-def drop_collection():
-    from pymilvus import utility
-    connections.connect(
-        uri=ZILLIZ_CLOUD_URI,
-        token=ZILLIZ_CLOUD_API_KEY
-    )
-    utility.drop_collection("reranking_docs")
+creds_mongo = mongoCredManager._format_creds()
+GROQ_API_KEY = aesDecryptor.get_plain_text(creds_mongo['GROQ_API_KEY'])
+ZILLIZ_CLOUD_URI = creds_mongo['ZILLIZ_CLOUD_URI']    
+ZILLIZ_CLOUD_API_KEY = aesDecryptor.get_plain_text(creds_mongo['ZILLIZ_CLOUD_API_KEY'])
+COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
 
-# Hybrid Search
-def milvus_hybrid_search(question, expr):
-    milvus_collection = load_collection(COLLECTION_NAME)
-    sparse_question_emb = sparse_embedding_model(question, SPARSE_EMBEDDING_MODEL)
-    dense_question_emb = dense_embedding_model(question, DENSE_EMBEDDING_MODEL)
-    output = []
-    
-    sparse_q = AnnSearchRequest(sparse_question_emb, "sparse_vector", SPARSE_SEARCH_PARAMS, limit=3) #expr
-    dense_q = AnnSearchRequest(dense_question_emb, "dense_vector", DENSE_SEARCH_PARAMS, limit=3) #expr
 
-    res = milvus_collection.hybrid_search([sparse_q, dense_q], rerank=RRFRanker(), limit=6,
-            output_fields=["source_link", "text", "author_name", "related_topics", "pdf_links"]  # Include title field in result
-        )
-    print(f"Hybrid Search Result: {res}")
-    for _, hits in enumerate(res):
-        for hit in hits:
-            page_content = hit.entity.get("text")
-            metadata = {
-                "source_link": hit.entity.get("source_link"),
-                "author_name": hit.entity.get("author_name"),
-                "related_topics": hit.entity.get("related_topics"),
-                "pdf_links": hit.entity.get("pdf_links")
-                }
-            doc_chunk = Document(page_content=page_content, metadata=metadata)
-            output.append(doc_chunk)
-    return output
-
-# Reranker
-def faiss_store_docs_to_rerank(docs_to_rerank, search_params:dict):
-    embeddings = retrieval_embedding_model(model_name=DENSE_EMBEDDING_MODEL)
-    #retriever = FAISS.from_documents(docs_to_rerank, embeddings)
-    retriever = Milvus.from_documents(
-        docs_to_rerank,
-        embeddings,
-        connection_args={"uri": ZILLIZ_CLOUD_URI, 'token': ZILLIZ_CLOUD_API_KEY, 'secure': True},
-        collection_name = "reranking_docs", ## custom collection name 
-        search_params = search_params,
-    )
-    return retriever
-
-def Reranker(question, docs_to_rerank) -> List:
-    # FlashrankRerank.update_forward_refs()
-    compressor = FlashrankRerank()
-    retriever = faiss_store_docs_to_rerank(docs_to_rerank, DENSE_SEARCH_PARAMS)
-    compression_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor, base_retriever=retriever.as_retriever(search_kwargs={"k": 3})
-    )
-    
-    compressed_docs = compression_retriever.invoke(
-        question
-    )
-    drop_collection()
-    return compressed_docs
+##Create Instances of all classes
+supportPromptGenerator = SupportPromptGenerator()
+#selfQueryRetrieval = SelfQueryRetrieval(LLM_MODEL_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, COLLECTION_NAME, GROQ_API_KEY) 
+customQueryExpander = CustomQueryExpander(LLM_MODEL_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, COLLECTION_NAME, GROQ_API_KEY)
+documentReranker = DocumentReranker(DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, DENSE_SEARCH_PARAMS) 
+milvusHybridSearch = MilvusHybridSearch(COLLECTION_NAME, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, SPARSE_EMBEDDING_MODEL, DENSE_EMBEDDING_MODEL, SPARSE_SEARCH_PARAMS, DENSE_SEARCH_PARAMS)
+llmModelInitializer = LLMModelInitializer(LLM_MODEL_NAME, GROQ_API_KEY, TEMPERATURE, TOP_P, FREQUENCY_PENALTY)
+questionModerator = QuestionModerator(LLM_MODEL_NAME, GROQ_API_KEY)
 
 def format_document(doc: Document) -> str:
         prompt = PromptTemplate(input_variables=["page_content"], template="{page_content}")
@@ -229,45 +112,6 @@ def format_document(doc: Document) -> str:
 def format_docs(docs):
     return "\n\n".join(format_document(doc) for doc in docs)
 
-def openai_embedding_model():
-    embeddings = OpenAIEmbeddings(model=openai_embedding_model_name, api_key=OPENAI_API_KEY)
-    return embeddings
-
-def detect_moderated_content(question):
-    support_template_p = """
-    {QUESTION_MODERATION_PROMPT}
-
-    Question: {question}
-    """
-
-    prompt = PromptTemplate(
-        template=support_template_p, input_variables=["QUESTION_MODERATION_PROMPT", "question"]
-    )
-
-    llm_model = initialise_llm_model(LLM_MODEL)
-    chain = (
-        {
-            "question": RunnablePassthrough(),
-            "QUESTION_MODERATION_PROMPT": RunnablePassthrough()
-        }
-        | prompt
-        | llm_model
-    )
-    response = chain.invoke({"question":question, "QUESTION_MODERATION_PROMPT":QUESTION_MODERATION_PROMPT})
-    return response
-
-def calculate_cost(total_usage:Dict):
-    # specific for gpt-4o, not generic
-    completion_tokens = total_usage['token_usage']['completion_tokens']
-    prompt_tokens = total_usage['token_usage']['prompt_tokens']
-
-    #cost in $
-    input_token = (prompt_tokens/1000)*0.0065
-    output_token = (completion_tokens/1000)*0.0195
-
-    total_cost = input_token+output_token
-    return total_cost
-
 def format_result(result:AIMessage):
     response = result.content
     response_metadata = result.response_metadata
@@ -276,7 +120,7 @@ def format_result(result:AIMessage):
 def advance_rag_chatbot(question, history):
     st_time = time.time()
     try:
-        content_type = detect_moderated_content(question)
+        content_type = questionModerator.detect(question, QUESTION_MODERATION_PROMPT)
         content_type = content_type.dict()
         print(f"CONTENT TYPE: {content_type}")
         if content_type['content']=="IRRELEVANT-QUESTION":
@@ -284,13 +128,14 @@ def advance_rag_chatbot(question, history):
             response = "Detected harmful content in the Question, Please Rephrase your question and Provide meaningful Question."
             return (response, end_time, [])
         else:
-            expanded_queries = Custom_Query_Exapander(question)
+            expanded_queries = customQueryExpander.expand_query(question)
+            #self_query, metadata_filters = selfQueryRetrieval.retrieve_query(question)
             combined_results = []
             for query in expanded_queries:
-                output = milvus_hybrid_search(question, expr="")
+                output = milvusHybridSearch.hybrid_search(question, HYBRID_SEARCH_TOPK) 
                 combined_results.extend(output)
             combined_results = combined_results[:3]
-            #reranked_docs = Reranker(question, combined_results)
+            #reranked_docs = documentReranker.rerank_docs(question, combined_results, RERANK_TOPK)
             formatted_context = format_docs(combined_results)
             response = chatbot(question, formatted_context, history)
             end_time = time.time() - st_time
@@ -301,18 +146,15 @@ def advance_rag_chatbot(question, history):
         return ("ERROR", end_time, [])
     
 def chatbot(question, formatted_context, retrieved_history):
-
     history = []
-
     if retrieved_history:
         if len(retrieved_history)>=NO_HISTORY:
             history = retrieved_history[-NO_HISTORY:]
         else:
             history = retrieved_history
 
-    llm_model = initialise_llm_model(LLM_MODEL)
-
-    prompt = support_prompt()
+    llm_model = llmModelInitializer.initialise_llm_model()
+    prompt = supportPromptGenerator.generate_prompt() ##
 
     # memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
@@ -332,17 +174,23 @@ def chatbot(question, formatted_context, retrieved_history):
     try:
         with get_openai_callback() as cb:
             print("Before Chain")
-            response = chain.invoke({"context":formatted_context,"chat_history":history, "question": question, "MASTER_PROMPT": MASTER_PROMPT, "LLAMA3_ASSISTANT_TAG":LLAMA3_ASSISTANT_TAG, "LLAMA3_USER_TAG":LLAMA3_USER_TAG, "LLAMA3_SYSTEM_TAG":LLAMA3_SYSTEM_TAG},{"callbacks": [cb]})
+            response = chain.invoke({"context":formatted_context,"chat_history":history, "question": question, "MASTER_PROMPT": supportPromptGenerator.MASTER_PROMPT, "LLAMA3_ASSISTANT_TAG":supportPromptGenerator.LLAMA3_ASSISTANT_TAG, "LLAMA3_USER_TAG":supportPromptGenerator.LLAMA3_USER_TAG, "LLAMA3_SYSTEM_TAG":supportPromptGenerator.LLAMA3_SYSTEM_TAG},{"callbacks": [cb]})
             print("After Chain")
             result, token_usage = format_result(response)
             # total_cost = calculate_cost(token_usage)
             return (result, token_usage)
     except Exception as e:
-        logger.info(f"ERROR: {traceback.format_exc()}")
+        print(f"ERROR: {traceback.format_exc()}")
         return str(e)
 
-@rag_router.post("/predict")
-async def pred(response: Response, elements: ResponseSchema):
-    prediction = advance_rag_chatbot(elements.query,elements.history)
-    return prediction
+# @rag_router.post("/predict")
+# async def pred(response: Response, elements: ResponseSchema):
+#     prediction = advance_rag_chatbot(elements.query,elements.history)
+#     return prediction
+
+if __name__ == "__main__":
+    query = ""
+    history = []
+    prediction = advance_rag_chatbot(query, history)
+    print(prediction)
 
