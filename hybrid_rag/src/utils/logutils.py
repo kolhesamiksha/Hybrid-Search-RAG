@@ -1,17 +1,44 @@
-import sys
-import os
 import logging
-import logging.config
 from pathlib import Path
+from datetime import datetime
 
-def Logger(file_name):
+class Logger:
+    def __init__(self, file_name=None, log_dir="logs"):
+        """
+        Initializes the Logger class.
 
-    logging.basicConfig(
-        level = logging.INFO,
-        format = "%(asctime)s %(levelname)s %(message)s",
-        datefmt = "%Y-%m-%d %H:%M:%S",
-        filename = f"logs/{file_name}"
-    )
+        :param file_name: Name of the log file. If None, it generates a timestamped log file name.
+        :param log_dir: Directory where log files will be stored.
+        """
+        # Ensure the logs directory exists
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(exist_ok=True)
 
-    log_object = logging.getLogger(file_name.split('.')[0])
-    return log_object
+        # Generate a default file name if not provided
+        if not file_name:
+            file_name = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+
+        self.file_path = self.log_dir / file_name
+
+        # Configure logging
+        self._configure_logger()
+
+    def _configure_logger(self):
+        """
+        Configures the logger with basic settings.
+        """
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s %(levelname)s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            filename=str(self.file_path)
+        )
+        self.logger = logging.getLogger(self.file_path.stem)
+
+    def get_logger(self)-> logging.getLogger:
+        """
+        Returns the logger instance.
+
+        :return: Configured logger object.
+        """
+        return self.logger
