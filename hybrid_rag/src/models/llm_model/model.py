@@ -1,14 +1,99 @@
+import os
+import traceback
+from typing import Optional
 from langchain_groq import ChatGroq
-from hybrid_rag.src.utils.get_insert_mongo_data import format_creds_mongo
-from hybrid_rag.src.utils.utils import decrypt_pass
+from hybrid_rag.src.utils.logutils import Logger
 
-LLM_MODEL_NAME = "llama-3.1-70b-versatile"
+logger = Logger().get_logger()
 
+class LLMModelInitializer:
+    def __init__(self, llm_model_name: str = '', groq_api_key: str = '', temperature: Optional[float] = None, 
+                 top_p: Optional[float] = None, frequency_penalty: Optional[float] = None):
+        """
+        Initializes the LLMModelInitializer with the necessary parameters.
 
-creds_mongo = format_creds_mongo()
+        :param llm_model_name: Name of the LLM model to initialize.
+        :param groq_api_key: API key for accessing the ChatGroq service.
+        :param temperature: Sampling temperature for the model.
+        :param top_p: Top-p sampling value for the model.
+        :param frequency_penalty: Frequency penalty for the model.
+        """
+        self.llm_model_name = llm_model_name
+        self.__groq_api_key = groq_api_key  # Make API key private
+        if temperature is not None:
+            self.temperature = temperature
+        else:
+            self.temperature = 0.3
+        if top_p is not None:
+            self.top_p = top_p
+        else:
+            self.top_p = 0.1
+        if frequency_penalty is not None:
+            self.frequency_penalty = frequency_penalty
+        else:
+            self.frequency_penalty = 1.0
+        self.llm_model = None
 
-GROQ_API_KEY = decrypt_pass(creds_mongo['GROQ_API_KEY'])
+    @property
+    def groq_api_key(self):
+        return self.__groq_api_key
 
-def initialise_llm_model(llm_model):
-    llm_model = ChatGroq(model=LLM_MODEL_NAME,api_key = GROQ_API_KEY, temperature=0.0, max_retries=2)
-    return llm_model
+    @groq_api_key.setter
+    def groq_api_key(self, value: str):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("groq_api_key must be a non-empty string.")
+        self.__groq_api_key = value
+
+    # Property for temperature
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value: float):
+        if not (0.0 <= value <= 1.0):
+            raise ValueError("temperature must be a float in the range [0.0, 1.0].")
+        self._temperature = value
+
+    # Property for top_p
+    @property
+    def top_p(self):
+        return self._top_p
+
+    @top_p.setter
+    def top_p(self, value: float):
+        if not (0.0 <= value <= 1.0):
+            raise ValueError("top_p must be a float in the range [0.0, 1.0].")
+        self._top_p = value
+
+    # Property for frequency_penalty
+    @property
+    def frequency_penalty(self):
+        return self._frequency_penalty
+
+    @frequency_penalty.setter
+    def frequency_penalty(self, value: float):
+        if not (-2.0 <= value <= 2.0):
+            raise ValueError("frequency_penalty must be a float in the range [-2.0, 2.0].")
+        self._frequency_penalty = value
+
+    def initialise_llm_model(self) -> Optional[ChatGroq]:
+        """
+        Initializes and returns the LLM model.
+
+        :return: An instance of the initialized LLM model.
+        """
+        try:
+            self.llm_model = ChatGroq(
+                model=self.llm_model_name,
+                api_key=self.__groq_api_key,  # Access private key
+                temperature=self._temperature,
+                top_p=self._top_p,
+                frequency_penalty=self._frequency_penalty,
+                max_retries=2
+            )
+            logger.info("Successfully Initialized the LLM model")
+        except Exception as e:
+            error = str(e)
+            logger.error(f"Failed to Initialize LLM model. Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
+        return self.llm_model
