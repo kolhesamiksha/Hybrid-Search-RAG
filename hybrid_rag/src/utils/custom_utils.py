@@ -1,4 +1,7 @@
 # SparseEmbeddiing Class modules
+import os
+import re
+import numpy as np
 from pydantic import BaseModel, Field, model_validator, validator
 from langchain_core.embeddings import Embeddings
 
@@ -13,7 +16,6 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.language_models import BaseLanguageModel
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
-import re
 
 class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
     """Qdrant FastEmbedding models.
