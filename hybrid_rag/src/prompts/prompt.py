@@ -1,4 +1,8 @@
+import traceback
 from langchain_core.prompts.prompt import PromptTemplate
+from hybrid_rag.src.utils.logutils import Logger
+
+logger = Logger().get_logger()
 
 QUESTION_MODERATION_PROMPT = """
     You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
@@ -27,46 +31,63 @@ QUESTION_MODERATION_PROMPT = """
     Response6: IRRELEVANT-QUESTION
 """
 
-MASTER_PROMPT = """
-    Please follow below instructions to provide the response:
-        1. Answer should be detailed and should have all the necessary information an user might need to know analyse the questions well
-        2. The user says "Hi" or "Hello." Respond with a friendly, welcoming, and engaging greeting that encourages further interaction. Make sure to sound enthusiastic and approachable.
-        3. Make sure to address the user's queries politely.
-        4. Compose a comprehensive reply to the query based on the CONTEXT given.
-        5. Respond to the questions based on the given CONTEXT. 
-        6. Please refrain from inventing responses and kindly respond with "I apologize, but that falls outside of my current scope of knowledge."
-        7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
-        8. Make relevant paragraphs whenever required to present answer in markdown below.
-        9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
-        10. Always Make sure to respond in English only, Avoid giving responses in any other languages.
+class SupportPromptGenerator:
+    """
+    A class to generate a structured support prompt for QA systems.
+    """
+
+    def __init__(self):
+        """
+        Initializes the SupportPromptGenerator with necessary system tags and master prompt.
         """
 
-LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
-LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
-LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+        self.LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
+        self.LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
+        self.LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+        self.MASTER_PROMPT = """
+        Please follow below instructions to provide the response:
+            1. Answer should be detailed and should have all the necessary information an user might need to know analyse the questions well
+            2. The user says "Hi" or "Hello." Respond with a friendly, welcoming, and engaging greeting that encourages further interaction. Make sure to sound enthusiastic and approachable.
+            3. Make sure to address the user's queries politely.
+            4. Compose a comprehensive reply to the query based on the CONTEXT given.
+            5. Respond to the questions based on the given CONTEXT. 
+            6. Please refrain from inventing responses and kindly respond with "I apologize, but that falls outside of my current scope of knowledge."
+            7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
+            8. Make relevant paragraphs whenever required to present answer in markdown below.
+            9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
+            10. Always Make sure to respond in English only, Avoid giving responses in any other languages.
+        """
 
-def support_prompt():
-    LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
-    LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
-    LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+    def generate_prompt(self) -> PromptTemplate:
+        """
+        Generates the QA prompt template using the initialized values.
 
-    support_template = """
-        {LLAMA3_SYSTEM_TAG}
-        {MASTER_PROMPT}
-        {LLAMA3_USER_TAG}
+        :return: A PromptTemplate instance for QA tasks.
+        """
+        support_template = f"""
+        {self.LLAMA3_SYSTEM_TAG}
+        {self.MASTER_PROMPT}
+        {self.LLAMA3_USER_TAG}
 
         Use the following context to answer the question.
         CONTEXT:
-        {context}
+        {{context}}
     
         CHAT HISTORY:
-        {chat_history}
+        {{chat_history}}
 
-        Question: {question}
-        {LLAMA3_ASSISTANT_TAG}
+        Question: {{question}}
+        {self.LLAMA3_ASSISTANT_TAG}
         """
 
-    QA_PROMPT = PromptTemplate(
-        template=support_template, input_variables=["LLAMA3_SYSTEM_TAG","LLAMA3_USER_TAG","LLAMA3_ASSISTANT_TAG","MASTER_PROMPT", "context", "chat_history", "question"]
-    )
-    return QA_PROMPT
+        try:
+            qa_prompt = PromptTemplate(
+                template=support_template,
+                input_variables=["context", "chat_history", "question"]
+            )
+            logger.info("Successfully generated the QA Prompt Template.")
+            return qa_prompt
+        except Exception as e:
+            error = str(e)
+            logger.error(f"Failed to Create Prompt template Reason: {error} -> TRACEBACK : {traceback.format_exc()}")
+            raise
