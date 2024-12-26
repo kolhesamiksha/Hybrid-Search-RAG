@@ -2,11 +2,11 @@ from pymongo import MongoClient
 import os
 import streamlit as st
 
-CONNECTION_STRING = st.secrets["CONNECTION_NAME"]
+CONNECTION_STRING = ""
 
-def get_database(connection_string):
+def get_database(connection_string, collection_name):
    client = MongoClient(connection_string)
-   return client['Hybrid-search-rag']
+   return client[collection_name]   #client['Hybrid-search-rag']
 
 def create_collection(dbname):
     collection_name = dbname["credentials"]
