@@ -1,8 +1,7 @@
 import traceback
+from typing import Optional
 from langchain_core.prompts.prompt import PromptTemplate
 from hybrid_rag.src.utils.logutils import Logger
-
-logger = Logger().get_logger()
 
 QUESTION_MODERATION_PROMPT = """
     You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
@@ -36,11 +35,12 @@ class SupportPromptGenerator:
     A class to generate a structured support prompt for QA systems.
     """
 
-    def __init__(self):
+    def __init__(self, logger:Optional[Logger]=None):
         """
         Initializes the SupportPromptGenerator with necessary system tags and master prompt.
         """
 
+        self.logger = logger if logger else Logger().get_logger()
         self.LLAMA3_SYSTEM_TAG = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
         self.LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
         self.LLAMA3_ASSISTANT_TAG = "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
@@ -85,9 +85,9 @@ class SupportPromptGenerator:
                 template=support_template,
                 input_variables=["context", "chat_history", "question"]
             )
-            logger.info("Successfully generated the QA Prompt Template.")
+            self.logger.info("Successfully generated the QA Prompt Template.")
             return qa_prompt
         except Exception as e:
             error = str(e)
-            logger.error(f"Failed to Create Prompt template Reason: {error} -> TRACEBACK : {traceback.format_exc()}")
+            self.logger.error(f"Failed to Create Prompt template Reason: {error} -> TRACEBACK : {traceback.format_exc()}")
             raise
