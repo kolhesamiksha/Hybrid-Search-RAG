@@ -28,11 +28,12 @@ class EmbeddingModels:
             embeddings = SparseFastEmbedEmbeddings(model_name=self.embed_model)
             query_embeddings = embeddings.embed_documents([texts])
             logger.info(f"Successfully Converted the text into Sparse Vectors Using model: {self.embed_model}")
+            return query_embeddings
         except Exception as e:
             error = str(e)
             logger.error(f"Failed to Initialised LLM model Reason: {error} -> TRACEBACK : {traceback.format_exc()}")
-        return query_embeddings
-
+            raise
+        
     def dense_embedding_model(self, texts: List[str]) -> List[List[float]]:
         """
         Creates dense embeddings for the given texts.
@@ -41,13 +42,14 @@ class EmbeddingModels:
         :return: The dense embeddings for the provided texts.
         """
         try:
-            embeddings = FastEmbedEmbeddings(model_name=self.embed_model)
+            embeddings = FastEmbedEmbeddings(model_name="jinaai/jina-embeddings-v2-base-en")
             query_embeddings = embeddings.embed_documents([texts])
             logger.info(f"Successfully Converted the text into Dense Vectors Using Model : {self.embed_model}")
+            return query_embeddings
         except Exception as e:
             error = str(e)
             logger.error(f"Failed to Initialised LLM model Reason: {error} -> TRACEBACK : {traceback.format_exc()}")
-        return query_embeddings
+            raise
 
     def retrieval_embedding_model(self) -> FastEmbedEmbeddings:
         """
@@ -55,6 +57,7 @@ class EmbeddingModels:
 
         :return: An instance of the retrieval embedding model.
         """
+        embed_model = None
         try:
             embed_model = FastEmbedEmbeddings(model_name=self.embed_model)
             logger.info(f"Successfully Initialised FastEmbed retriever model: {self.embed_model}")

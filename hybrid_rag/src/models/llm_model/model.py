@@ -7,17 +7,20 @@ from hybrid_rag.src.utils.logutils import Logger
 logger = Logger().get_logger()
 
 class LLMModelInitializer:
-    def __init__(self, llm_model_name: str = '', groq_api_key: str = '', temperature: Optional[float] = None, 
-                 top_p: Optional[float] = None, frequency_penalty: Optional[float] = None):
+    def __init__(self, llm_model_name: str = '', groq_api_key: str = '', temperature: Optional[float] = 0.3, 
+                 top_p: Optional[float] = 0.1, frequency_penalty: Optional[float] = 1.0, logger: Optional[Logger] = None):
         """
         Initializes the LLMModelInitializer with the necessary parameters.
 
         :param llm_model_name: Name of the LLM model to initialize.
         :param groq_api_key: API key for accessing the ChatGroq service.
-        :param temperature: Sampling temperature for the model.
-        :param top_p: Top-p sampling value for the model.
-        :param frequency_penalty: Frequency penalty for the model.
+        :param temperature Optional: Sampling temperature for the model.
+        :param top_p Optional: Top-p sampling value for the model.
+        :param frequency_penalty Optional: Frequency penalty for the model.
+        :param logger Optional: Logger
         """
+
+        self.logger = logger if logger else Logger().get_logger()
         self.llm_model_name = llm_model_name
         self.__groq_api_key = groq_api_key  # Make API key private
         if temperature is not None:
@@ -92,8 +95,8 @@ class LLMModelInitializer:
                 frequency_penalty=self._frequency_penalty,
                 max_retries=2
             )
-            logger.info("Successfully Initialized the LLM model")
+            self.logger.info("Successfully Initialized the LLM model")
         except Exception as e:
             error = str(e)
-            logger.error(f"Failed to Initialize LLM model. Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
+            self.logger.error(f"Failed to Initialize LLM model. Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
         return self.llm_model
