@@ -34,6 +34,7 @@ from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.utils.decrypter import AESDecryptor
 from hybrid_rag.src.utils.get_mongo_data import MongoCredentialManager
 from hybrid_rag.src.moderation.question_moderator import QuestionModerator
+from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
 #TODO:add Logger & exceptions
 
 # st.set_option('global.cache.persist', True)
@@ -61,7 +62,7 @@ SPARSE_SEARCH_PARAMS = {
 # Defone your Question Here
 QUESTION = "What is Generative AI?"
 
-CONNECTION_STRING = "mongodb+srv://kolhesamiksha25:yRxcIbqRBJORdwFm@cluster0.p3zf3zw.mongodb.net/"
+CONNECTION_STRING = ""
 MONGO_COLLECTION_NAME= "Hybrid-search-rag"
 DB_NAME = "credentials"
 
@@ -84,12 +85,13 @@ COLLECTION_NAME= creds_mongo['COLLECTION_NAME']
 
 ##Create Instances of all classes
 supportPromptGenerator = SupportPromptGenerator()
-#selfQueryRetrieval = SelfQueryRetrieval(LLM_MODEL_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, COLLECTION_NAME, GROQ_API_KEY) 
-customQueryExpander = CustomQueryExpander(LLM_MODEL_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, COLLECTION_NAME, GROQ_API_KEY)
-documentReranker = DocumentReranker(DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, DENSE_SEARCH_PARAMS) 
-milvusHybridSearch = MilvusHybridSearch(COLLECTION_NAME, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, SPARSE_EMBEDDING_MODEL, DENSE_EMBEDDING_MODEL, SPARSE_SEARCH_PARAMS, DENSE_SEARCH_PARAMS)
 llmModelInitializer = LLMModelInitializer(LLM_MODEL_NAME, GROQ_API_KEY, TEMPERATURE, TOP_P, FREQUENCY_PENALTY)
-questionModerator = QuestionModerator(LLM_MODEL_NAME, GROQ_API_KEY)
+vectorDBInitializer = VectorStoreManager(ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY)
+milvusHybridSearch = MilvusHybridSearch(COLLECTION_NAME, SPARSE_EMBEDDING_MODEL, DENSE_EMBEDDING_MODEL, SPARSE_SEARCH_PARAMS, DENSE_SEARCH_PARAMS, vectorDBInitializer)
+selfQueryRetrieval = SelfQueryRetrieval(COLLECTION_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, llmModelInitializer, vectorDBInitializer) 
+customQueryExpander = CustomQueryExpander(COLLECTION_NAME, DENSE_SEARCH_PARAMS, DENSE_EMBEDDING_MODEL, llmModelInitializer, vectorDBInitializer)
+documentReranker = DocumentReranker(DENSE_EMBEDDING_MODEL, ZILLIZ_CLOUD_URI, ZILLIZ_CLOUD_API_KEY, DENSE_SEARCH_PARAMS) 
+questionModerator = QuestionModerator(LLM_MODEL_NAME, GROQ_API_KEY, llmModelInitializer)
 
 def format_document(doc: Document) -> str:
         prompt = PromptTemplate(input_variables=["page_content"], template="{page_content}")
@@ -129,7 +131,7 @@ def advance_rag_chatbot(question, history):
             return (response, end_time, [])
         else:
             expanded_queries = customQueryExpander.expand_query(question)
-            #self_query, metadata_filters = selfQueryRetrieval.retrieve_query(question)
+            self_query, metadata_filters = selfQueryRetrieval.retrieve_query(question)
             combined_results = []
             for query in expanded_queries:
                 output = milvusHybridSearch.hybrid_search(question, HYBRID_SEARCH_TOPK) 
