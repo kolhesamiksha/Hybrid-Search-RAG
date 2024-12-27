@@ -1,14 +1,22 @@
 import os
 import time
+from typing import Optional
 from langchain_core.documents import Document
 from pymilvus import Collection, utility, AnnSearchRequest, RRFRanker, connections
-
+from hybrid_rag.src.utils.logutils import Logger
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
 from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
 
 class MilvusHybridSearch:
-    def __init__(self, collection_name: str, zillinz_cloud_uri:str, zillinz_cloud_api_key:str, sparse_embedding_model: str, dense_embedding_model: str, 
-                 sparse_search_params: dict, dense_search_params: dict):
+    def __init__(self, 
+                 collection_name: str, 
+                 sparse_embedding_model: str, 
+                 dense_embedding_model: str, 
+                 sparse_search_params: dict, 
+                 dense_search_params: dict, 
+                 vectorDbInstance: VectorStoreManager,
+                 logger: Optional[Logger]=None
+                ):
         """
         Initialize the MilvusHybridSearch object with necessary parameters.
         
@@ -17,18 +25,16 @@ class MilvusHybridSearch:
         :param dense_embedding_model: The dense embedding model.
         :param sparse_search_params: The parameters for sparse search.
         :param dense_search_params: The parameters for dense search.
+        :param vectorDbInstance: VectorStoreManager class instance, class object as parameter
         """
+        self.logger = logger if logger else Logger().get_logger()
         self.collection_name = collection_name
         self.sparse_embedding_model = sparse_embedding_model
         self.dense_embedding_model = dense_embedding_model
         self.sparse_search_params = sparse_search_params
         self.dense_search_params = dense_search_params
-        self.zillinz_cloud_uri = zillinz_cloud_uri
-        self.__zillinz_cloud_api_key = zillinz_cloud_api_key
-        
-        # Load Milvus collection using VectorStoreManager
-        vectorStoreManager = VectorStoreManager(self.zillinz_cloud_uri, self.__zillinz_cloud_api_key)
-        self.milvus_collection = vectorStoreManager.load_collection(self.collection_name)
+        self.vectorDbInstance = vectorDbInstance
+        self.milvus_collection = self.vectorDbInstance.load_collection(self.collection_name)
 
     @property
     def collection_name(self):

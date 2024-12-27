@@ -1,5 +1,6 @@
 import os
 import traceback
+from typing import Optional
 from langchain.chains.query_constructor.base import AttributeInfo
 from langchain.retrievers.self_query.base import SelfQueryRetriever
 
@@ -7,37 +8,42 @@ from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
 from hybrid_rag.src.utils.logutils import Logger
 
-logger = Logger().get_logger()
-
 class SelfQueryRetrieval:
-    def __init__(self, llm_model: str, dense_search_params: dict, dense_embedding_model: str, 
-                 zillinz_cloud_uri: str, zillinz_cloud_api_key: str, collection_name: str, groq_api_key:str):
+    def __init__(
+            self,
+            collection_name: str, 
+            dense_search_params: dict, 
+            dense_embedding_model: str, 
+            llmModelInstance: LLMModelInitializer,
+            vectorDbInstance: VectorStoreManager,
+            logger: Optional[Logger]=None,
+        ):
         """
         Initialize the SelfQueryRetrieval object with necessary parameters.
         
-        :param llm_model: The LLM model name for initializing the LLM model.
         :param dense_search_params: Parameters for dense search.
         :param dense_embedding_model: Dense embedding model for vector initialization.
-        :param zillinz_cloud_uri: Zilliz Cloud URI.
-        :param zillinz_cloud_api_key: Zilliz Cloud API Key.
         :param collection_name: The collection name in the vector store.
+        :param llmModelInstance: LLMModel Instance must be of type LLMModelInitializer class
+        :param vectorDbInstance: VectorStoreManager class instance, class object as parameter
         """
-        self.llm_model = llm_model
+        #self.llm_model = llm_model
+        self.logger = logger if logger else Logger().get_logger()
         self.dense_search_params = dense_search_params
         self.dense_embedding_model = dense_embedding_model
-        self.zillinz_cloud_uri = zillinz_cloud_uri
-        self.__zillinz_cloud_api_key = zillinz_cloud_api_key
-        self.__groq_api_key = groq_api_key
+        #self.__groq_api_key = groq_api_key
         self.collection_name = collection_name
+        self.llmModelInstance = llmModelInstance
+        self.vectorDbInstance = vectorDbInstance
         
         try:
-            # Initialize the LLM model
-            llmModelInitializer = LLMModelInitializer(self.llm_model, self.__groq_api_key)
+            llmModelInitializer = self.llmModelInstance
             self.llm_model_instance = llmModelInitializer.initialise_llm_model()
             
-            vectorStoreManager = VectorStoreManager(self.zillinz_cloud_uri, self.__zillinz_cloud_api_key)
+            vectorDbInitializer = self.vectorDbInstance
+            #vectorStoreManager = VectorStoreManager(self.zillinz_cloud_uri, self.__zillinz_cloud_api_key)
             # Initialize the vector store
-            self.vector_store = vectorStoreManager.initialise_vector_store(
+            self.vector_store = vectorDbInitializer.initialise_vector_store(
                 "dense_vector", 
                 self.dense_search_params, 
                 self.dense_embedding_model,
@@ -79,7 +85,7 @@ class SelfQueryRetrieval:
             )
         except Exception as e:
             error = str(e)
-            logger.error(f"Failed to Initialize the parameters inside SelfQueryRetriever Constructor Class Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
+            self.logger.error(f"Failed to Initialize the parameters inside SelfQueryRetriever Constructor Class Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
             raise
 
     def retrieve_query(self, question: str):
@@ -92,9 +98,9 @@ class SelfQueryRetrieval:
         try:
             structured_query = self.selfq_retriever.query_constructor.invoke({"query": question})
             new_query, search_kwargs = self.selfq_retriever._prepare_query(question, structured_query)
-            logger.info("Succesfully Executed the SelfQuery & generated metafieltering params and new query")
+            self.logger.info("Succesfully Executed the SelfQuery & generated metafieltering params and new query")
             return new_query, search_kwargs
         except Exception as e:
             error = str(e)
-            logger.error(f"Failed to Generate Metadata Fielters and New Query by SelfQuery Retrierver Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
+            self.logger.error(f"Failed to Generate Metadata Fielters and New Query by SelfQuery Retrierver Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
             raise  # Re-raise the exception after logging it
