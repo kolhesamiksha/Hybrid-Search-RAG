@@ -16,6 +16,8 @@ class MongoCredentialManager:
         Initializes the MongoCredentialManager with the connection string.
 
         :param connection_string: MongoDB connection string.
+        :param collection_name: MongoDB collection name.
+        :param db_name: MongoDB database name where data stored.
         """
         self.connection_string = connection_string
         self.collection_name = collection_name

@@ -13,13 +13,13 @@ class AESDecryptor:
         """
         Initializes the AESDecryptor with the base64 encoded key.
 
-        :param base64_encoded_key: The encrypted key in base64 encoding.
         """
 
     def __decrypt_pass(self, base64_encoded_key) -> str:
         """
         Decrypts the base64 encoded key and returns the plain text.
-
+        
+        :param base64_encoded_key: The encrypted key in base64 encoding.
         :return: The decrypted plain text as a string.
         """
         try:
@@ -40,6 +40,7 @@ class AESDecryptor:
         """
         Public method to get the decrypted plain text.
 
+        :param base64_encoded_key: The encrypted key in base64 encoding.
         :return: The decrypted plain text as a string.
         """
         return self.__decrypt_pass(base64_encoded_key)

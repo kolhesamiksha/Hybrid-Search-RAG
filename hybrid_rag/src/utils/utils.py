@@ -11,7 +11,6 @@ from hybrid_rag.src.utils.logutils import Logger
 
 #TODO:add Logger & exceptions
 
-
 def save_history_to_github(query, response, github_token):
     try:
         g = Github(github_token)
