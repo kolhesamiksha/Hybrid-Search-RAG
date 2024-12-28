@@ -1,0 +1,70 @@
+# Workflow YAML file
+name: Build and Deploy Hybrid RAG
+
+on:
+  push:
+    branches:
+      - #define branch name
+
+jobs:
+  build-and-test:
+    name: Build, Test, and Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Install Dependencies
+      run: poetry install --with lint,dev,typing,codespell
+
+    - name: Run Tests
+      run: make test
+
+    - name: Build Wheel File
+      run: make build
+
+    - name: Build Docker Image
+      run: docker build -t hybrid-rag-app .
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    - name: Tag Docker Image
+      run: |
+        IMAGE_URI=${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
+        docker tag hybrid-rag-app:latest $IMAGE_URI
+
+    - name: Push Docker Image
+      run: |
+        IMAGE_URI=${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
+        docker push $IMAGE_URI
+
+    - name: Deploy to ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+        service: ${{ secrets.ECS_SERVICE_NAME }}
+        image: ${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
+        region: ${{ secrets.AWS_REGION }}
