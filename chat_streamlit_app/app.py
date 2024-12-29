@@ -1,37 +1,31 @@
-import streamlit as st
-from streamlit_chat import message
-from streamlit.components.v1 import html
-
-import os
-import io
-import tempfile
-import requests
 from base64 import b64encode
-from pydantic import BaseModel
-from src.utils.logutils import Logger
-from src.api import advance_rag_chatbot
-from langchain_core.messages import HumanMessage, AIMessage
-from github import Github
-import pandas as pd
-import base64
 from typing import List
+from dotenv import load_dotenv
 
-from src.utils.utils import save_history_to_github
-from src.utils.utils import rag_evaluation
+import streamlit as st
+from hybrid_rag.src.config import Config
+from hybrid_rag.src.rag import RAGChatbot
+from hybrid_rag.src.utils import Logger
+from hybrid_rag.src.utils.utils import save_history_to_github
+
+load_dotenv()
+logger = Logger().get_logger()
+config = Config()
 
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
+
 
 def initialize_session_state():
     if "history" not in st.session_state:
         st.session_state["history"] = []
 
     if "generated" not in st.session_state:
-        st.session_state["generated"] = [] #["Hello! Ask me anything about 🤗"]
+        st.session_state["generated"] = []  # ["Hello! Ask me anything about 🤗"]
 
     if "past" not in st.session_state:
-        st.session_state["past"] = [] #["Hi! How can I assist you👋"]
-    
+        st.session_state["past"] = []  # ["Hi! How can I assist you👋"]
+
     if "df" not in st.session_state:
         st.session_state["df"] = []
 
@@ -41,10 +35,17 @@ def initialize_session_state():
     if "persona" not in st.session_state:
         st.session_state["persona"] = "Chatbot Assistant"  # Default password
 
+
 def login_section():
     # Display login form
-    username = st.text_input("username", key="username", placeholder="Enter your name here")
-    persona = st.text_input("Perosna", key="persona", placeholder="Enter your persona for your chatbot personalization")
+    username = st.text_input(
+        "username", key="username", placeholder="Enter your name here"
+    )
+    persona = st.text_input(
+        "Perosna",
+        key="persona",
+        placeholder="Enter your persona for your chatbot personalization",
+    )
     if st.button("Save"):
         if username and persona:  # Example condition
             st.session_state["logged_in"] = True
@@ -55,6 +56,7 @@ def login_section():
             st.error("Invalid credentials. Please try again.")
     else:
         pass
+
 
 def message_func(text, is_user=False):
     """
@@ -75,7 +77,7 @@ def message_func(text, is_user=False):
         avatar_url = "https://media.istockphoto.com/id/1184817738/vector/men-profile-icon-simple-design.jpg?s=612x612&w=0&k=20&c=d-mrLCbWvVYEbNNMN6jR_yhl_QBoqMd8j7obUsKjwIM="  # Provided logo link
         bg_color = response_bg_color
         alignment = "flex-start"
-            # <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        # <div style="display: flex; align-items: center; margin-bottom: 20px;">
     st.write(
         f"""
         <div style="display: flex; align-items: flex-start; margin-bottom: 20px; justify-content: {alignment};">
@@ -87,8 +89,9 @@ def message_func(text, is_user=False):
             </div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
+
 
 def render_menu():
     # Custom CSS for menu button and options
@@ -127,11 +130,11 @@ def render_menu():
     </style>
     """
     st.markdown(custom_css, unsafe_allow_html=True)
-    
+
     # Main menu button
-    if 'show_menu' not in st.session_state:
+    if "show_menu" not in st.session_state:
         st.session_state.show_menu = False
-    if 'clicked_option' not in st.session_state:
+    if "clicked_option" not in st.session_state:
         st.session_state.clicked_option = ""
 
     # Display main menu button
@@ -149,7 +152,7 @@ def render_menu():
                 st.session_state.clicked_option = "Monitoring"
             if st.button("Chatbot"):
                 st.session_state.clicked_option = "Chatbot"
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
     # Display content based on the selected option
     if st.session_state.clicked_option == "User Guide":
@@ -162,11 +165,13 @@ def render_menu():
         st.title("Chatbot")
         st.write("Chatbot content here...")
 
+
 def prepare_context(context) -> List[List[str]]:
     prepared_lst = []
     for doc in context:
         prepared_lst.append(doc.page_content)
     return [prepared_lst]
+
 
 def conversation_chat(query, history):
     # logger.info(f"Query {query}")
@@ -176,8 +181,11 @@ def conversation_chat(query, history):
     #     "query": query['query'],
     #     "history": history
     # }
-    #response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
-    response = advance_rag_chatbot(query['query'], history)
+    # response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
+    
+    #Optional
+    chatbot_instance = RAGChatbot(config, logger)
+    response = chatbot_instance.advance_rag_chatbot(query["query"], history)
     print(f"APP RESPONSE: {response}")
     if isinstance(response[0], str):
         metrices = {}
@@ -185,10 +193,10 @@ def conversation_chat(query, history):
     else:
         print("Not harmful content")
         context = prepare_context(response[2])
-        metrices = rag_evaluation([query['query']], [response[0][0]],context)
-        save_history_to_github(query['query'], response)
+        metrices = rag_evaluation([query["query"]], [response[0][0]], context)
+        save_history_to_github(query["query"], response)
 
-    return response, metrices
+    return response, 
 
 def main():
     st.set_page_config(
@@ -202,20 +210,21 @@ def main():
         },
     )
     initialize_session_state()
-    #st.session_state["logged_in"] = False
+    # st.session_state["logged_in"] = False
     if not st.session_state["logged_in"]:
         login_section()  # Ask the user to login
-        #if st.session_state["logged_in"]:  # If logged in, rerun to hide the login screen
-            #st.experimental_rerun()
+        # if st.session_state["logged_in"]:  # If logged in, rerun to hide the login screen
+        # st.experimental_rerun()
     else:
         if st.session_state["logged_in"]:
-            #st.markdown(custom_css, unsafe_allow_html=True)
-            if 'show_menu' not in st.session_state:
+            # st.markdown(custom_css, unsafe_allow_html=True)
+            if "show_menu" not in st.session_state:
                 st.session_state.show_menu = False  # Initially, the menu is hidden
-            if 'clicked_option' not in st.session_state:
+            if "clicked_option" not in st.session_state:
                 st.session_state.clicked_option = ""  # No option clicked initially
 
-            st.markdown("""
+            st.markdown(
+                """
                 <style>
                 .logo-img {
                     max-width: 150px; /* Adjust the maximum width as needed */
@@ -224,7 +233,7 @@ def main():
                     margin: auto; /* Centers the image horizontally */
                 }
                 </style>
-                
+
                 <div class="top-bar">
                     <button class="menu-button">☰</button>
                     <span class="title-text">AI Consultant</span>
@@ -232,9 +241,11 @@ def main():
                         <svg class="github-icon" xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22v-2.09a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.42 5.42 0 0 0 20 4.77 5.07 5.07 0 0 0 20.91 1S19.73.65 16 3a13.38 13.38 0 0 0-8 0C5.27.65 4.09 1 4.09 1A5.07 5.07 0 0 0 5 4.77 5.42 5.42 0 0 0 3.5 10.3c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 19.91V22"></path></svg>
                     </a>
                 </div>
-                """, unsafe_allow_html=True
+                """,
+                unsafe_allow_html=True,
             )
-            st.markdown("""
+            st.markdown(
+                """
             <style>
                 .top-bar {
                     background-color: #FFD700; /* Example background color */
@@ -349,13 +360,13 @@ def main():
                     height: 40px;
                     font-weight: bold;
                 }
-                
+
                 .main-container {
                     background: #eeeeee;
                     height: 100vh;
                     overflow: hidden;
                 }
-                
+
                 .github-link {
                     position: absolute;
                     right: 10px; /* Distance from the right edge of the top bar */
@@ -402,10 +413,12 @@ def main():
                 .st-b3 {
                     border-left-color: rgb(255 255 255 / 0%);
                 }
-                        
+
             </style>
-        """, unsafe_allow_html=True)
-            
+        """,
+                unsafe_allow_html=True,
+            )
+
             # if st.button("☰", key="menu-button"):
             #     st.session_state.show_menu = not st.session_state.show_menu
 
@@ -413,7 +426,7 @@ def main():
             # if not st.session_state.show_menu:
             #     with st.container():
             #         st.markdown('<div class="expandable-menu">', unsafe_allow_html=True)
-                    
+
             #         # Add buttons inside the expandable menu
             #         if st.button("User Guide"):
             #             st.session_state.clicked_option = "User Guide"
@@ -421,9 +434,9 @@ def main():
             #             st.session_state.clicked_option = "Chatbot"
             #         if st.button("Monitoring"):
             #             st.session_state.clicked_option = "Monitoring"
-                    
+
             #         st.markdown('</div>', unsafe_allow_html=True)
-                    
+
             container = st.container()
             col1, col2 = st.columns([14, 1])
             with col1:
@@ -441,15 +454,16 @@ def main():
                 svg_image = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 1 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tabler-icon tabler-icon-send"><path d="M10 14l11 -11"></path><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"></path></svg>
                 """
-                svg_base64 = "data:image/svg+xml;base64," + b64encode(svg_image.encode()).decode()
+                svg_base64 = (
+                    "data:image/svg+xml;base64,"
+                    + b64encode(svg_image.encode()).decode()
+                )
 
                 # Check if the hidden button is clicked
                 if st.button("Send", on_click=None):
-                    data = {
-                        'query': user_input
-                    }
+                    data = {"query": user_input}
                     try:
-                        output, metrices  = conversation_chat(
+                        output, metrices = conversation_chat(
                             data, st.session_state["history"]
                         )
                         if isinstance(output[0], str):
@@ -458,12 +472,16 @@ def main():
                             st.session_state["past"].append(user_input)
                             st.session_state["generated"].append(output[0])
                         else:
-                            st.session_state["history"].append([user_input, output[0][0]])
+                            st.session_state["history"].append(
+                                [user_input, output[0][0]]
+                            )
                             # st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
                             st.session_state["past"].append(user_input)
                             st.session_state["generated"].append(output[0][0])
-                    except Exception as e:
-                        st.session_state["generated"].append('There is some issue with API Key, Usage Limit exceeds for the Day!!')
+                    except Exception:
+                        st.session_state["generated"].append(
+                            "There is some issue with API Key, Usage Limit exceeds for the Day!!"
+                        )
 
             if st.session_state["generated"]:
                 print(st.session_state["generated"])
@@ -471,16 +489,16 @@ def main():
                     for i in range(len(st.session_state["generated"])):
                         with st.container():
                             message_func(st.session_state["past"][i], is_user=True)
-                            if 'output' in locals() and 'metrices' in locals():
+                            if "output" in locals() and "metrices" in locals():
                                 if isinstance(output[0], str):
                                     message_func(
-                                        f'<strong>Latency:</strong> {output[1]}s<br>'
+                                        f"<strong>Latency:</strong> {output[1]}s<br>"
                                         f'{st.session_state["generated"][i]}',
-                                        is_user=False
+                                        is_user=False,
                                     )
                                 else:
                                     message_func(
-                                        f'<strong>Latency:</strong> {output[1]}s<br>'
+                                        f"<strong>Latency:</strong> {output[1]}s<br>"
                                         f'<strong>Faithfullness:</strong> {metrices["faithfulness"]}<br>'
                                         f'<strong>Context_Utilization:</strong> {metrices["context_utilization"]}<br>'
                                         f'<strong>Harmfulness:</strong> {metrices["harmfulness"]}<br>'
@@ -488,9 +506,10 @@ def main():
                                         f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
                                         f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
                                         f'{st.session_state["generated"][i]}',
-                                        is_user=False
+                                        is_user=False,
                                     )
-                                #message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
+                                # message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
+
 
 if __name__ == "__main__":
     main()
