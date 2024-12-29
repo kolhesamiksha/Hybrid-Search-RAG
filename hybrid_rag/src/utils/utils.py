@@ -8,11 +8,11 @@ from github import Github
 
 # TODO:add Logger & exceptions
 
-def save_history_to_github(query, response, github_token):
+def save_history_to_github(query, response, github_token, repo_name, chatfile_name):
     try:
         g = Github(github_token)
-        repo = g.get_repo("kolhesamiksha/Hybrid-Search-RAG")
-        contents = repo.get_contents("Chatbot-streamlit/chat_history/chat_history.csv")
+        repo = g.get_repo(repo_name)
+        contents = repo.get_contents(chatfile_name)
         decoded_content = base64.b64decode(contents.content)
         csv_file = io.BytesIO(decoded_content)
         df = pd.read_csv(csv_file)
@@ -24,7 +24,6 @@ def save_history_to_github(query, response, github_token):
         repo.update_file(contents.path, "Updated CSV File", updated_csv, contents.sha)
     except Exception:
         print(traceback.format_exc())
-
 
 def calculate_cost(total_usage: Dict):
     # specific for gpt-4o, not generic

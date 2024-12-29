@@ -7,6 +7,7 @@ from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Dict
 
 from dotenv import load_dotenv
 
@@ -29,7 +30,6 @@ from hybrid_rag.src.evaluate import RAGAEvaluator
 from hybrid_rag.src.models import LLMModelInitializer
 from hybrid_rag.src.moderation import QuestionModerator
 from hybrid_rag.src.prompts.prompt import (
-    QUESTION_MODERATION_PROMPT,
     SupportPromptGenerator,
 )
 from hybrid_rag.src.utils import (
@@ -59,7 +59,14 @@ class RAGChatbot:
         self.logger = logger if logger else Logger().get_logger()
 
         # Initialize dependencies using the provided self.config
-        self.supportPromptGenerator = SupportPromptGenerator(self.logger)
+        self.supportPromptGenerator = SupportPromptGenerator(
+            self.config.LLM_MODEL_NAME,
+            self.config.MASTER_PROMPT,
+            self.config.LLAMA3_USER_TAG,
+            self.config.LLAMA3_SYSTEM_TAG,
+            self.config.LLAMA3_ASSISTANT_TAG,
+            self.logger,
+        )
         self.llmModelInitializer = LLMModelInitializer(
             self.config.LLM_MODEL_NAME,
             self.config.GROQ_API_KEY,
@@ -107,7 +114,8 @@ class RAGChatbot:
             self.logger,
         )
         self.questionModerator = QuestionModerator(
-            self.llmModelInitializer, self.logger
+            self.llmModelInitializer,
+            self.logger,
         )
         self.docFormatter = DocumentFormatter()
         self.ragaEvaluator = RAGAEvaluator(
@@ -188,7 +196,7 @@ class RAGChatbot:
 
     def advance_rag_chatbot(
         self, question: str, history: List[str]
-    ) -> Tuple[str, float, List[Any]]:
+    ) -> Tuple[str, float, List[Any], Dict[Any], Dict[Any]]:
         """
         Processes a question through the chatbot pipeline, including content moderation, query expansion, document retrieval, and response generation.
 
@@ -206,7 +214,7 @@ class RAGChatbot:
         try:
             # Detect the content type of the question using the moderator.
             content_type = self.questionModerator.detect(
-                question, QUESTION_MODERATION_PROMPT
+                question, self.config.QUESTION_MODERATION_PROMPT
             )
             content_type = content_type.dict()
             self.logger.info(f"Question Moderation Response:{content_type['content']}")
@@ -234,17 +242,24 @@ class RAGChatbot:
                 )
                 combined_results.extend(output)
 
-            # Rank and format the documents.
-            reranked_docs = self.documentReranker.rerank_docs(
-                question, combined_results, self.config.RERANK_TOPK
-            )
+            if self.config.IS_RERANK:
+                # Rank and format the documents.
+                reranked_docs = self.documentReranker.rerank_docs(
+                    question, combined_results, self.config.RERANK_TOPK
+                )
+            else:
+                reranked_docs = combined_results[-self.config.RERANK_TOPK]
             formatted_context = self.docFormatter.format_docs(reranked_docs)
 
             # Generate the chatbot response.
             response, token_usage = self._chatbot(question, formatted_context, history)
-            evaluated_results = self.ragaEvaluator.evaluate_rag(
-                [question], [response], combined_results
-            )
+
+            if self.config.IS_EVALUATE:
+                evaluated_results = self.ragaEvaluator.evaluate_rag(
+                    [question], [response], combined_results
+                )
+            else:
+                evaluated_results = {}
             total_time = time.time() - st_time
             return (
                 response,
@@ -258,13 +273,3 @@ class RAGChatbot:
             print(f"ERROR: {traceback.format_exc()}")
             end_time = time.time() - st_time
             return ("ERROR", end_time, [], {}, {})
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    question = "tell me about the Supply chain consulting at EY-India"
-    history = []
-    logger = Logger().get_logger()
-    config = Config()
-    chatbot_instance = RAGChatbot(config, logger)
-    prediction = chatbot_instance.advance_rag_chatbot(question, history)
