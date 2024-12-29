@@ -1,11 +1,11 @@
 # Hybrid-Search-RAG-Chatbot
 
-This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.   
+This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.  
 
 ![Advance-rag-chatbot](https://github.com/user-attachments/assets/b15b0c51-008d-468e-90af-0f072e4789d8)
 
 
-### Deployed FASTAPI: 
+### Deployed FASTAPI:
 
 https://comparable-clarie-adsds-226b08fd.koyeb.app/
 
@@ -17,9 +17,9 @@ https://hybrid-search-rag-chatbot-sam.streamlit.app/
 
 The approaches Followed for building RAG pipeline is discussed below
 
-#### 1. WebCrawling: 
+#### 1. WebCrawling:
 
-The Website was a rich source of documents in everydomain like AI, Supply chain, Digital, Cybersecurity and Various Informational Blogs and Use-cases Discussed. Most of the websites have a common web interface and HTML Codebase which was suitable to built an automation using For Webscraping. 
+The Website was a rich source of documents in everydomain like AI, Supply chain, Digital, Cybersecurity and Various Informational Blogs and Use-cases Discussed. Most of the websites have a common web interface and HTML Codebase which was suitable to built an automation using For Webscraping.
 1. Used Sitemap of Topics under ey_in domain.
 1. Analyse the Structure of the Websites.
 2. Extracted metadata required further for metadata filtering or Self-Query Retriever to post-retrieval for better performance i.e. Author name, related topics, pdf_links. Pdf links added because most of the blogs contains PDF for detailed information. in future content can be extracted and used for training of the chatbot for more information.
@@ -31,13 +31,13 @@ After WeCrawling and Scraping data from the BaseURL. Applied various Techniques 
 
 1. **RecursiveCharacterTextSplitter**: It splits the data by intelligently analysing the structure of the data based on splitting criterias. But Limitation is Not Calculate the semantic similarity between the context while splitting. Hence, Not better if we are unknown to the fact of Structure of Data.
 
-2. **Semantic Chunking**: Semantic Chunking splits the data in between the sentences. Based in the similarity between the sentences it combines the sentences and split the data where similarity drops to an extend. It works on embedding Similarity between the Sentences. 
+2. **Semantic Chunking**: Semantic Chunking splits the data in between the sentences. Based in the similarity between the sentences it combines the sentences and split the data where similarity drops to an extend. It works on embedding Similarity between the Sentences.
 
 - 2.1 **Statistical Chunking**: Better for English Text only. Instead of chunking text with a fixed chunk size, the semantic splitter adaptively picks the breakpoint in-between sentences using embedding similarity. This ensures that a "chunk" contains sentences that are semantically related to each other. For Semantic chunking used **jinaai/jina-embeddings-v2-base-en** (8K context length) by langchain FastEmbedding Module.
 
 - 2.2 **Rolling Window Spltting(Used in RAG)**: It uses a rolling window to consider splitting and applies semantic similarity while considering the sentence to combine and split. This Technique is more generic for any type of embeddding model, MAX_SPLI, MIN_SPLIT parameters makes it more customisable. Providing Chunks compatible to semantic chunking technique.
 
-#### 3. Metadata Chunking Method: 
+#### 3. Metadata Chunking Method:
 
 Metadata Filtering is a way to limit the searches and increase chances of Information exact retrieval of chunks. For Metadata added Primary Source_links, author_names, related_topics, pdf_links.
 
@@ -52,17 +52,17 @@ Used Milvus to store the emebeddings, pymilvus module is more customisable for h
 
 #### 6. Query-Expansion Techniques: Self-Query retrieval for metadata & MultiQuery:
 
-Query Compression techniques are like Query breakdown, Query exapansion(Multiple Queries). Created a Customised MultiQuery Retrieval Class find on Chatbot-streamlit/src/utils/custom_utils.py. Defined my own prompt for Query formulations and breakdown. 
+Query Compression techniques are like Query breakdown, Query exapansion(Multiple Queries). Created a Customised MultiQuery Retrieval Class find on Chatbot-streamlit/src/utils/custom_utils.py. Defined my own prompt for Query formulations and breakdown.
 
-#### 7. Metadata-Filtering techniques: 
+#### 7. Metadata-Filtering techniques:
 
 For Metadata Filtering **Used Self-Query Retrieval** which used LLM model to get the **filters and strctured query** relevant to Query by the User.
 
 #### 8. Retrieval: Hybrid-search:
 
-Used Hybrid Search By milvus, Stored Sparse and Dense vectors indexes inside the milvus collection. During retrieval used ANNSSearch to retrieve the Chunks. 
-Applied Hybrid Search on Multiple queries generated by Query-expansion techniques + Metadata-filtering by Self-Query Over Sparse & Dense embedding search Limit 3 Each. 
-Total for 5 queries using Sparse search generated: 15 chunks & using Dense search generated: 15 chunks Subtotal 30 Chunks Retrieved. 
+Used Hybrid Search By milvus, Stored Sparse and Dense vectors indexes inside the milvus collection. During retrieval used ANNSSearch to retrieve the Chunks.
+Applied Hybrid Search on Multiple queries generated by Query-expansion techniques + Metadata-filtering by Self-Query Over Sparse & Dense embedding search Limit 3 Each.
+Total for 5 queries using Sparse search generated: 15 chunks & using Dense search generated: 15 chunks Subtotal 30 Chunks Retrieved.
 
 #### 9. Reranking Techniques:
 
@@ -158,7 +158,7 @@ To Run the Application Locally First Run the FastAPI backend. Follow Below Instr
 
     #Now Run the FastAPI using below command and Relative Path as Chatbot-streamlit/
     uvicorn src.main:app --reload
- 
+
 Now /predict Endpoint of FastAPI is getting exposed, which can be used in out Streamlit app to do Q&A over RAG.
 
 - Check the API working in swagger
