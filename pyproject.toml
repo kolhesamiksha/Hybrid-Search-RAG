@@ -11,12 +11,9 @@ readme = "README.md"
 repository = "https://github.com/kolhesamiksha/Hybrid-Search-RAG"
 keywords = ["streamlit", "langchain", "openai", "rag", "python", "groq", "hybrid search"]
 
-[tool.poetry.packages]
-# Tell Poetry to look inside `src` for the hybrid_rag package
-packages = [{ include = "hybrid_rag", from = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11.9,<3.13"
+python = ">=3.11,<3.13"
 streamlit = "^1.41.1"
 streamlit-chat = "^0.1.1"
 streamlit-elements = "^0.1.0"
@@ -24,7 +21,6 @@ langchain-community = "^0.2.13"
 langchain = "^0.2.12"
 fastembed = "^0.3.2"
 langchain-core = "^0.2.43"
-langchain-milvus = "^0.1.7"
 langchain-openai = "^0.1.25"
 langchain-groq = "^0.1.10"
 openai = "^1.58.1"
@@ -35,7 +31,7 @@ fastapi = "^0.115.6"
 uvicorn = "^0.34.0"
 pycryptodome = "^3.21.0"
 ragas = "^0.2.9"
-datasets = "^3.2.0"
+datasets = "3.2.0"
 flashrank = "^0.2.9"
 PyGithub = "^2.5.0"
 lark = "^1.2.2"
@@ -71,16 +67,12 @@ exclude = ".*(tests|examples|docs).*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
+pytest-asyncio = "^0.20.0"
 black = "^23.9b0"
 coverage = "^7.2.0"
-codespell = "^2.2.0"
-mypy = "^1.5.0"
 
 [tool.poetry.group.codespell.dependencies]
 codespell = "^2.2.0"
-
-[tool.poetry.group.typing.dependencies]
-mypy = "^1.5.0"
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
@@ -89,7 +81,7 @@ extend-include = ["*.ipynb"]
 select = ["E", "F", "I", "T201"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config --durations=5 --snapshot-warn-unused -vv"
+addopts = "--strict-markers --strict-config --durations=5 -vv"
 markers = [
     "requires: mark tests as requiring a specific library",
     "scheduled: mark tests to run in scheduled testing",
@@ -105,4 +97,3 @@ ignore-regex = '.*(Stati Uniti|Tense=Pres).*'
 # aapply - async apply
 # unsecure - typo but part of API, decided to not bother for now
 ignore-words-list = 'momento,collison,ned,foor,reworkd,parth,whats,aapply,mysogyny,unsecure,damon,crate,aadd,symbl,precesses,accademia,nin,cann'
-
