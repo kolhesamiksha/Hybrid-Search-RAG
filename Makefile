@@ -1,10 +1,11 @@
 # Variables
 DIST_NAME := hybrid-rag  # Poetry package name
 PACKAGE_NAME := hybrid_rag  # Python package/module name
-SRC_DIR := src/$(PACKAGE_NAME)  # Source directory
+SRC_DIR := $(PACKAGE_NAME)/src  # Source directory
 TEST_DIR := tests  # Test directory
+.PRECOMMIT := .pre-commit-config.yaml
 
-.PHONY: help install test build clean lint format type-check codespell
+.PHONY: help install test build clean lint format type-check codespell install-precommit run-precommit
 
 # Display available commands
 help:
@@ -22,6 +23,15 @@ help:
 install:
 	@echo "Installing dependencies with Poetry..."
 	poetry install --with lint,dev,typing,codespell
+
+# Install pre-comit dependencies
+install-precommit:
+	pip install pre-commit
+	pre-commit install
+
+# Run all pre-commits
+run-precommit:
+	pre-commit run --all-files
 
 # Run tests
 test:
