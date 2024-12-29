@@ -1,36 +1,54 @@
-import time
 import os
 import sys
+import time
 import traceback
 import warnings
-from datetime import datetime
-from typing import List, Tuple, Any, Optional
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 from dotenv import load_dotenv
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 # LECL chain modules
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda, RunnableParallel
 from langchain.callbacks import get_openai_callback
+from langchain_core.runnables import (
+    RunnablePassthrough,
+)
 
-from hybrid_rag.src.prompts.prompt import QUESTION_MODERATION_PROMPT, SupportPromptGenerator
-from hybrid_rag.src.advance_rag import SelfQueryRetrieval, CustomQueryExpander, DocumentReranker, MilvusHybridSearch
-from hybrid_rag.src.utils import MongoCredentialManager, AESDecryptor, DocumentFormatter, Logger
-from hybrid_rag.src.moderation import QuestionModerator
-from hybrid_rag.src.models import LLMModelInitializer
-from hybrid_rag.src.vectordb import VectorStoreManager
+from hybrid_rag.src.advance_rag import (
+    CustomQueryExpander,
+    DocumentReranker,
+    MilvusHybridSearch,
+    SelfQueryRetrieval,
+)
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.evaluate import RAGAEvaluator
-#TODO:add Logger & exceptions
+from hybrid_rag.src.models import LLMModelInitializer
+from hybrid_rag.src.moderation import QuestionModerator
+from hybrid_rag.src.prompts.prompt import (
+    QUESTION_MODERATION_PROMPT,
+    SupportPromptGenerator,
+)
+from hybrid_rag.src.utils import (
+    DocumentFormatter,
+    Logger,
+)
+from hybrid_rag.src.vectordb import VectorStoreManager
+
+# TODO:add Logger & exceptions
 warnings.filterwarnings("ignore")
+
 
 class RAGChatbot:
     """
-    A class that encapsulates the functionality of a Retrieval-Augmented Generation (RAG) chatbot. 
+    A class that encapsulates the functionality of a Retrieval-Augmented Generation (RAG) chatbot.
     The chatbot can process questions, handle content moderation, perform hybrid search, and interact with a language model.
     """
 
-    def __init__(self, config:Config, logger:Optional[Logger]) -> None:
+    def __init__(self, config: Config, logger: Optional[Logger]) -> None:
         """
         Initializes the RAGChatbot instance with a given configuration.
 
@@ -51,7 +69,7 @@ class RAGChatbot:
             self.logger,
         )
         self.vectorDBInitializer = VectorStoreManager(
-            self.config.ZILLIZ_CLOUD_URI, 
+            self.config.ZILLIZ_CLOUD_URI,
             self.config.ZILLIZ_CLOUD_API_KEY,
             self.logger,
         )
@@ -88,7 +106,9 @@ class RAGChatbot:
             self.vectorDBInitializer,
             self.logger,
         )
-        self.questionModerator = QuestionModerator(self.llmModelInitializer, self.logger)
+        self.questionModerator = QuestionModerator(
+            self.llmModelInitializer, self.logger
+        )
         self.docFormatter = DocumentFormatter()
         self.ragaEvaluator = RAGAEvaluator(
             self.config.LLM_MODEL_NAME,
@@ -98,7 +118,9 @@ class RAGChatbot:
             self.logger,
         )
 
-    def _chatbot(self, question: str, formatted_context: str, retrieved_history: List[str]) -> Tuple[str, int]:
+    def _chatbot(
+        self, question: str, formatted_context: str, retrieved_history: List[str]
+    ) -> Tuple[str, int]:
         """
         Generates a response to a question using a pre-defined prompt and a language model. The context and history are provided to the model.
 
@@ -115,7 +137,7 @@ class RAGChatbot:
         history = []
         if retrieved_history:
             if len(retrieved_history) >= self.config.NO_HISTORY:
-                history = retrieved_history[-self.config.NO_HISTORY:]
+                history = retrieved_history[-self.config.NO_HISTORY :]
             else:
                 history = retrieved_history
 
@@ -131,7 +153,7 @@ class RAGChatbot:
                 "context": RunnablePassthrough(),
                 "question": RunnablePassthrough(),
                 "chat_history": RunnablePassthrough(),
-                "MASTER_PROMPT": RunnablePassthrough()
+                "MASTER_PROMPT": RunnablePassthrough(),
             }
             | prompt
             | llm_model
@@ -140,28 +162,33 @@ class RAGChatbot:
         try:
             # Use the OpenAI callback to monitor API usage.
             with get_openai_callback() as cb:
-                response = chain.invoke({
-                    "context": formatted_context,
-                    "chat_history": history,
-                    "question": question,
-                    "MASTER_PROMPT": self.supportPromptGenerator.MASTER_PROMPT,
-                    "LLAMA3_ASSISTANT_TAG": self.supportPromptGenerator.LLAMA3_ASSISTANT_TAG,
-                    "LLAMA3_USER_TAG": self.supportPromptGenerator.LLAMA3_USER_TAG,
-                    "LLAMA3_SYSTEM_TAG": self.supportPromptGenerator.LLAMA3_SYSTEM_TAG
-                }, {"callbacks": [cb]})
-                
+                response = chain.invoke(
+                    {
+                        "context": formatted_context,
+                        "chat_history": history,
+                        "question": question,
+                        "MASTER_PROMPT": self.supportPromptGenerator.MASTER_PROMPT,
+                        "LLAMA3_ASSISTANT_TAG": self.supportPromptGenerator.LLAMA3_ASSISTANT_TAG,
+                        "LLAMA3_USER_TAG": self.supportPromptGenerator.LLAMA3_USER_TAG,
+                        "LLAMA3_SYSTEM_TAG": self.supportPromptGenerator.LLAMA3_SYSTEM_TAG,
+                    },
+                    {"callbacks": [cb]},
+                )
+
                 self.logger.info(f"Successfully Generated the Response: {response}")
                 # Format the result and return the response.
-                result, token_usage = self.docFormatter.format_result(response)
-                self.logger.info(f"Token Usage for the Question: {token_usage}")
+                result = self.docFormatter.format_result(response)
+                self.logger.info(f"Token Usage for the Question: {result[1]}")
                 # total_cost = calculate_cost(token_usage)
-                return result, token_usage
+                return result[0], result[1]
 
         except Exception as e:
             self.logger.info(f"ERROR: {traceback.format_exc()}")
             return str(e), 0
 
-    def advance_rag_chatbot(self, question: str, history: List[str]) -> Tuple[str, float, List[Any]]:
+    def advance_rag_chatbot(
+        self, question: str, history: List[str]
+    ) -> Tuple[str, float, List[Any]]:
         """
         Processes a question through the chatbot pipeline, including content moderation, query expansion, document retrieval, and response generation.
 
@@ -178,41 +205,60 @@ class RAGChatbot:
         st_time = time.time()
         try:
             # Detect the content type of the question using the moderator.
-            content_type = self.questionModerator.detect(question, QUESTION_MODERATION_PROMPT)
+            content_type = self.questionModerator.detect(
+                question, QUESTION_MODERATION_PROMPT
+            )
             content_type = content_type.dict()
             self.logger.info(f"Question Moderation Response:{content_type['content']}")
             # If the question is irrelevant, return an error message.
-            if content_type['content'] == "IRRELEVANT-QUESTION":
+            if content_type["content"] == "IRRELEVANT-QUESTION":
                 end_time = time.time() - st_time
                 response = "Detected harmful content in the Question, Please Rephrase your question and Provide meaningful Question."
-                self.logger.info(f"IRRELEVANT-QUESTION")
+                self.logger.info("IRRELEVANT-QUESTION")
                 return (response, end_time, [], {}, {})
 
             # Expand the query and retrieve results.
             expanded_queries = self.customQueryExpander.expand_query(question)
-            self_query, metadata_filters = self.selfQueryRetrieval.retrieve_query(question)
+            self_query, metadata_filters = self.selfQueryRetrieval.retrieve_query(
+                question
+            )
             expanded_queries.append(self_query)
             self.logger.info(f"Expanded Queries are: {expanded_queries}")
-            self.logger.info(f"Self Query Generated: {self_query}, Metadata Filters: {metadata_filters}")
+            self.logger.info(
+                f"Self Query Generated: {self_query}, Metadata Filters: {metadata_filters}"
+            )
             combined_results = []
             for query in expanded_queries:
-                output = self.milvusHybridSearch.hybrid_search(query, self.config.HYBRID_SEARCH_TOPK)
+                output = self.milvusHybridSearch.hybrid_search(
+                    query, self.config.HYBRID_SEARCH_TOPK
+                )
                 combined_results.extend(output)
 
             # Rank and format the documents.
-            reranked_docs = self.documentReranker.rerank_docs(question, combined_results, self.config.RERANK_TOPK)
+            reranked_docs = self.documentReranker.rerank_docs(
+                question, combined_results, self.config.RERANK_TOPK
+            )
             formatted_context = self.docFormatter.format_docs(reranked_docs)
-            
+
             # Generate the chatbot response.
             response, token_usage = self._chatbot(question, formatted_context, history)
-            evaluated_results = self.ragaEvaluator.evaluate_rag([question], [response], combined_results)
+            evaluated_results = self.ragaEvaluator.evaluate_rag(
+                [question], [response], combined_results
+            )
             total_time = time.time() - st_time
-            return (response, total_time, combined_results, evaluated_results, token_usage)
+            return (
+                response,
+                total_time,
+                combined_results,
+                evaluated_results,
+                token_usage,
+            )
 
-        except Exception as e:
+        except Exception:
             print(f"ERROR: {traceback.format_exc()}")
             end_time = time.time() - st_time
             return ("ERROR", end_time, [], {}, {})
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -221,4 +267,4 @@ if __name__ == "__main__":
     logger = Logger().get_logger()
     config = Config()
     chatbot_instance = RAGChatbot(config, logger)
-    prediction  = chatbot_instance.advance_rag_chatbot(question, history)
+    prediction = chatbot_instance.advance_rag_chatbot(question, history)

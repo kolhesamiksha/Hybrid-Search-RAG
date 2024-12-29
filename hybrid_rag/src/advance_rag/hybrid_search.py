@@ -1,25 +1,27 @@
-import os
-import time
 from typing import Optional
-from langchain_core.documents import Document
-from pymilvus import Collection, utility, AnnSearchRequest, RRFRanker, connections
+
+from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
 from hybrid_rag.src.utils.logutils import Logger
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
-from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
+from langchain_core.documents import Document
+from pymilvus import AnnSearchRequest
+from pymilvus import RRFRanker
+
 
 class MilvusHybridSearch:
-    def __init__(self, 
-                 collection_name: str, 
-                 sparse_embedding_model: str, 
-                 dense_embedding_model: str, 
-                 sparse_search_params: dict, 
-                 dense_search_params: dict, 
-                 vectorDbInstance: VectorStoreManager,
-                 logger: Optional[Logger]=None
-                ):
+    def __init__(
+        self,
+        collection_name: str,
+        sparse_embedding_model: str,
+        dense_embedding_model: str,
+        sparse_search_params: dict,
+        dense_search_params: dict,
+        vectorDbInstance: VectorStoreManager,
+        logger: Optional[Logger] = None,
+    ):
         """
         Initialize the MilvusHybridSearch object with necessary parameters.
-        
+
         :param collection_name: The name of the Milvus collection.
         :param sparse_embedding_model: The sparse embedding model.
         :param dense_embedding_model: The dense embedding model.
@@ -34,7 +36,9 @@ class MilvusHybridSearch:
         self.sparse_search_params = sparse_search_params
         self.dense_search_params = dense_search_params
         self.vectorDbInstance = vectorDbInstance
-        self.milvus_collection = self.vectorDbInstance.load_collection(self.collection_name)
+        self.milvus_collection = self.vectorDbInstance.load_collection(
+            self.collection_name
+        )
 
     @property
     def collection_name(self):
@@ -69,7 +73,7 @@ class MilvusHybridSearch:
     def generate_embeddings(self, question: str):
         """
         Generate sparse and dense embeddings for the given question.
-        
+
         :param question: The input question to generate embeddings for.
         :return: A tuple containing sparse and dense embeddings.
         """
@@ -82,25 +86,39 @@ class MilvusHybridSearch:
     def perform_search(self, sparse_question_emb, dense_question_emb, search_limit):
         """
         Perform hybrid search on the Milvus collection using sparse and dense embeddings.
-        
+
         :param sparse_question_emb: The sparse question embedding.
         :param dense_question_emb: The dense question embedding.
         :return: A list of documents matching the search query.
         """
         # Create AnnSearchRequest for sparse and dense queries
-        sparse_q = AnnSearchRequest(sparse_question_emb, "sparse_vector", self.sparse_search_params, limit=3)
-        dense_q = AnnSearchRequest(dense_question_emb, "dense_vector", self.dense_search_params, limit=3)
+        sparse_q = AnnSearchRequest(
+            sparse_question_emb, "sparse_vector", self.sparse_search_params, limit=3
+        )
+        dense_q = AnnSearchRequest(
+            dense_question_emb, "dense_vector", self.dense_search_params, limit=3
+        )
 
         # Perform hybrid search
-        res = self.milvus_collection.hybrid_search([sparse_q, dense_q], rerank=RRFRanker(), limit=search_limit,
-                                                   output_fields=["source_link", "text", "author_name", "related_topics", "pdf_links"])
+        res = self.milvus_collection.hybrid_search(
+            [sparse_q, dense_q],
+            rerank=RRFRanker(),
+            limit=search_limit,
+            output_fields=[
+                "source_link",
+                "text",
+                "author_name",
+                "related_topics",
+                "pdf_links",
+            ],
+        )
 
         return res
 
     def process_results(self, res):
         """
         Process the search results and create a list of Document objects.
-        
+
         :param res: The search results from Milvus.
         :return: A list of Document objects containing page content and metadata.
         """
@@ -112,16 +130,16 @@ class MilvusHybridSearch:
                     "source_link": hit.entity.get("source_link"),
                     "author_name": hit.entity.get("author_name"),
                     "related_topics": hit.entity.get("related_topics"),
-                    "pdf_links": hit.entity.get("pdf_links")
+                    "pdf_links": hit.entity.get("pdf_links"),
                 }
                 doc_chunk = Document(page_content=page_content, metadata=metadata)
                 output.append(doc_chunk)
         return output
 
-    def hybrid_search(self, question: str, search_limit:int):
+    def hybrid_search(self, question: str, search_limit: int):
         """
         Perform hybrid search by generating embeddings, performing search, and processing results.
-        
+
         :param question: The input question to perform the search for.
         :return: A list of Document objects containing the search results.
         """

@@ -1,6 +1,7 @@
 import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 
 class Logger:
     def __init__(self, file_name=None, log_dir="logs"):
@@ -31,11 +32,11 @@ class Logger:
             level=logging.DEBUG,
             format="%(asctime)s %(levelname)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
-            filename=str(self.file_path)
+            filename=str(self.file_path),
         )
         self.logger = logging.getLogger(self.file_path.stem)
 
-    def get_logger(self)-> logging.getLogger:
+    def get_logger(self) -> logging.getLogger:
         """
         Returns the logger instance.
 

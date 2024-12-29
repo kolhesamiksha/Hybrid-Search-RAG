@@ -1,14 +1,22 @@
-import os
 import traceback
 from typing import Optional
-from langchain_groq import ChatGroq
+
 from hybrid_rag.src.utils.logutils import Logger
+from langchain_groq import ChatGroq
 
 logger = Logger().get_logger()
 
+
 class LLMModelInitializer:
-    def __init__(self, llm_model_name: str = '', groq_api_key: str = '', temperature: Optional[float] = 0.3, 
-                 top_p: Optional[float] = 0.1, frequency_penalty: Optional[float] = 1.0, logger: Optional[Logger] = None):
+    def __init__(
+        self,
+        llm_model_name: str = "",
+        groq_api_key: str = "",
+        temperature: Optional[float] = 0.3,
+        top_p: Optional[float] = 0.1,
+        frequency_penalty: Optional[float] = 1.0,
+        logger: Optional[Logger] = None,
+    ):
         """
         Initializes the LLMModelInitializer with the necessary parameters.
 
@@ -77,7 +85,9 @@ class LLMModelInitializer:
     @frequency_penalty.setter
     def frequency_penalty(self, value: float):
         if not (-2.0 <= value <= 2.0):
-            raise ValueError("frequency_penalty must be a float in the range [-2.0, 2.0].")
+            raise ValueError(
+                "frequency_penalty must be a float in the range [-2.0, 2.0]."
+            )
         self._frequency_penalty = value
 
     def initialise_llm_model(self) -> Optional[ChatGroq]:
@@ -93,10 +103,12 @@ class LLMModelInitializer:
                 temperature=self._temperature,
                 top_p=self._top_p,
                 frequency_penalty=self._frequency_penalty,
-                max_retries=2
+                max_retries=2,
             )
             self.logger.info("Successfully Initialized the LLM model")
         except Exception as e:
             error = str(e)
-            self.logger.error(f"Failed to Initialize LLM model. Reason: {error} -> TRACEBACK: {traceback.format_exc()}")
+            self.logger.error(
+                f"Failed to Initialize LLM model. Reason: {error} -> TRACEBACK: {traceback.format_exc()}"
+            )
         return self.llm_model

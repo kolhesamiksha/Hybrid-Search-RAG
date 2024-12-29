@@ -1,6 +1,8 @@
-from langchain_core.messages import HumanMessage, AIMessage
-from langchain_core.prompts.prompt import PromptTemplate
+from typing import Tuple
+
 from langchain_core.documents import Document
+from langchain_core.messages import AIMessage
+from langchain_core.prompts.prompt import PromptTemplate
 
 
 class DocumentFormatter:
@@ -17,14 +19,18 @@ class DocumentFormatter:
         :return: Formatted string representation of the document.
         :raises ValueError: If required metadata fields are missing.
         """
-        prompt = PromptTemplate(input_variables=["page_content"], template="{page_content}")
-        
-        if 'source_link' in doc.metadata.keys():
-            prompt += PromptTemplate(input_variables=["source_link"], template="\n[Source: {source_link}]")
-        
+        prompt = PromptTemplate(
+            input_variables=["page_content"], template="{page_content}"
+        )
+
+        if "source_link" in doc.metadata.keys():
+            prompt += PromptTemplate(
+                input_variables=["source_link"], template="\n[Source: {source_link}]"
+            )
+
         base_info = {"page_content": doc.page_content, **doc.metadata}
         missing_metadata = set(prompt.input_variables).difference(base_info)
-        
+
         if len(missing_metadata) > 0:
             required_metadata = [
                 iv for iv in prompt.input_variables if iv != "page_content"
@@ -34,7 +40,7 @@ class DocumentFormatter:
                 f"{required_metadata}. Received document with missing metadata: "
                 f"{list(missing_metadata)}."
             )
-        
+
         return prompt.format(**base_info)
 
     @staticmethod
@@ -48,7 +54,7 @@ class DocumentFormatter:
         return "\n\n".join(DocumentFormatter.format_document(doc) for doc in docs)
 
     @staticmethod
-    def format_result(result: AIMessage):
+    def format_result(result: AIMessage) -> Tuple[str, int]:
         """
         Extract and return the response content and metadata from an AIMessage.
 

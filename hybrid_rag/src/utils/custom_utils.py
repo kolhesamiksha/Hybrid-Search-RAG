@@ -1,21 +1,23 @@
 # SparseEmbeddiing Class modules
-import os
 import re
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
 import numpy as np
-from pydantic import BaseModel, Field, model_validator, validator
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_core.embeddings import Embeddings
+from langchain_core.output_parsers import BaseOutputParser
+from langchain_core.prompts import BasePromptTemplate
+from langchain_core.prompts.prompt import PromptTemplate
+from langchain_core.retrievers import BaseRetriever
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import model_validator
 
 # Custom Query Expansion Class modules
-from abc import ABC, abstractmethod
-from pydantic import BaseModel
-from typing import List, Optional, Tuple, Literal, Any, Dict
-from langchain_core.prompts.prompt import PromptTemplate
-from langchain_core.prompts import BasePromptTemplate
-from langchain_core.output_parsers import BaseOutputParser
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.language_models import BaseLanguageModel
-from langchain.retrievers.multi_query import MultiQueryRetriever
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
+
 
 class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
     """Qdrant FastEmbedding models.
@@ -51,13 +53,16 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
     The available options are: "default" and "passage"
     """
 
-    model: Any = Field(default=None, exclude=True)  # Renamed to 'model' and marked as private
+    model: Any = Field(
+        default=None, exclude=True
+    )  # Renamed to 'model' and marked as private
 
     class Config:
         """Configuration for this pydantic object."""
-        extra = 'forbid'
 
-    @model_validator(mode='before')
+        extra = "forbid"
+
+    @model_validator(mode="before")
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that FastEmbed has been installed."""
         return values
@@ -122,7 +127,13 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
             Embeddings for the text.
         """
         query_embeddings: np.ndarray = next(self.model.query_embed(text))
-        return [{int(idx): float(val) for idx, val in zip(query_embeddings.indices, query_embeddings.values)}]
+        return [
+            {
+                int(idx): float(val)
+                for idx, val in zip(query_embeddings.indices, query_embeddings.values)
+            }
+        ]
+
 
 # Custom Query Expansion Class
 class LineListOutputParser(BaseOutputParser[List[str]]):
@@ -130,20 +141,21 @@ class LineListOutputParser(BaseOutputParser[List[str]]):
 
     def parse(self, text: str) -> List[str]:
         lines = text.strip().split("\n")
-        cleaned_lines = [re.sub(r'^\d+\.\s*', '', line) for line in lines]
+        cleaned_lines = [re.sub(r"^\d+\.\s*", "", line) for line in lines]
         return cleaned_lines
+
 
 class CustomMultiQueryRetriever(MultiQueryRetriever):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     MULTI_QUERY_PROMPT = PromptTemplate(
-        input_variables = ["question"],
+        input_variables=["question"],
         template="""You are an AI language model assistant. Your task is to break down question if possible to retrieve
-       relevant documents from a vector database. By generating 5 break down questions of user question, your goal is to 
+       relevant documents from a vector database. By generating 5 break down questions of user question, your goal is to
        help the user overcome some of the limitations of distance-based similarity search. Provide these multi step questions
        separated by newlines. Only break down question if poosible otherwise return the original question.\n Original Question: {question}
-        """ 
+        """,
     )
 
     @classmethod
@@ -154,12 +166,9 @@ class CustomMultiQueryRetriever(MultiQueryRetriever):
         prompt: BasePromptTemplate = MULTI_QUERY_PROMPT,
         include_original: bool = True,
     ) -> "CustomMultiQueryRetriever":
-
         output_parser = LineListOutputParser()
         llm_chain = prompt | llm | output_parser
 
         return cls(
-            retriever=retriever,
-            llm_chain=llm_chain,
-            include_original=include_original
+            retriever=retriever, llm_chain=llm_chain, include_original=include_original
         )

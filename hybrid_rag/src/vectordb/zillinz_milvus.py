@@ -1,11 +1,20 @@
 from typing import Optional
-from pymilvus import Collection, AnnSearchRequest, RRFRanker, connections, utility
+
 from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
-from langchain_community.vectorstores import Milvus
 from hybrid_rag.src.utils.logutils import Logger
+from langchain_community.vectorstores import Milvus
+from pymilvus import Collection
+from pymilvus import connections
+from pymilvus import utility
+
 
 class VectorStoreManager:
-    def __init__(self, zilliz_cloud_uri:str, zilliz_cloud_api_key:str, logger:Optional[Logger]=None):
+    def __init__(
+        self,
+        zilliz_cloud_uri: str,
+        zilliz_cloud_api_key: str,
+        logger: Optional[Logger] = None,
+    ):
         """
         Initialize the VectorStoreManager with required configuration.
 
@@ -24,8 +33,7 @@ class VectorStoreManager:
         This method ensures that the required connection is established before interacting with Milvus.
         """
         connections.connect(
-            uri=self.zilliz_cloud_uri,
-            token=self.__zilliz_cloud_api_key
+            uri=self.zilliz_cloud_uri, token=self.__zilliz_cloud_api_key
         )
 
     def load_collection(self, collection_name):
@@ -61,7 +69,9 @@ class VectorStoreManager:
             self.logger.error(f"Failed to drop collection {collection_name}: {str(e)}")
             raise
 
-    def initialise_vector_store(self, vector_field, search_params, dense_embedding_model, collection_name):
+    def initialise_vector_store(
+        self, vector_field, search_params, dense_embedding_model, collection_name
+    ):
         """
         Initialize a vector store with the specified parameters.
 
@@ -78,13 +88,21 @@ class VectorStoreManager:
             embeddings = embedding_model.retrieval_embedding_model()
             vector_store = Milvus(
                 embeddings,
-                connection_args={"uri": self.zilliz_cloud_uri, 'token': self.__zilliz_cloud_api_key, 'secure': True},
+                connection_args={
+                    "uri": self.zilliz_cloud_uri,
+                    "token": self.__zilliz_cloud_api_key,
+                    "secure": True,
+                },
                 collection_name=collection_name,
                 search_params=search_params,
-                vector_field=vector_field
+                vector_field=vector_field,
             )
-            self.logger.info(f"Vector store for collection {collection_name} initialized successfully.")
+            self.logger.info(
+                f"Vector store for collection {collection_name} initialized successfully."
+            )
             return vector_store
         except Exception as e:
-            self.logger.error(f"Failed to initialize vector store for collection {collection_name}: {str(e)}")
+            self.logger.error(
+                f"Failed to initialize vector store for collection {collection_name}: {str(e)}"
+            )
             raise
