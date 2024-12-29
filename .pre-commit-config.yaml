@@ -1,58 +1,89 @@
+# .pre-commit-config.yaml
+
 repos:
--   repo: https://github.com/psf/black
-    rev: 22.6.0
-    hooks:
-    -   id: black
-        args: [--safe]
+- repo: https://github.com/psf/black
+  rev: stable  # Use the latest stable version
+  hooks:
+    - id: black
+      args: [--safe]
 
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-    -   id: check-docstring-first
-    -   id: check-added-large-files
-    -   id: check-toml
-    -   id: check-yaml
-        args:
-        -   --unsafe
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
-        args: ["--markdown-linebreak-ext=md"]
-        langauge_version: python3
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+    - id: check-docstring-first
+    - id: check-added-large-files
+    - id: check-toml
+    - id: check-yaml
+      args:
+        - --unsafe
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+      args: ["--markdown-linebreak-ext=md"]
+      language_version: python3
 
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.4
-    hooks:
-    -   id: ruff
-        args:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.5.0  # Update with the version from pyproject.toml
+  hooks:
+    - id: ruff
+      args:
         - --fix
-    -   id: ruff-format
+    - id: ruff-format
 
--   repo: https://github.com/PyCQA/flake8
-    rev: 5.0.3
-    hooks:
-    -   id: flake8
-        args: [--max-line-length=160]
-        language_version: python3
+- repo: https://github.com/PyCQA/flake8
+  rev: 6.0.0  # Update with the version from pyproject.toml
+  hooks:
+    - id: flake8
+      args: [--exclude=tests,examples,docs]
+      language_version: python3
 
--   repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.8.0
-    hooks:
-    -   id: reorder-python-imports
-        args: [--application-directories=.explainit, --py38-plus]
+- repo: https://github.com/asottile/reorder_python_imports
+  rev: v3.8.0
+  hooks:
+    - id: reorder-python-imports
+      args: [--application-directories=.explainit, --py38-plus]
 
--   repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.3
-    hooks:
-    -   id: pyupgrade
-        args: [--py38-plus]
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.37.3
+  hooks:
+    - id: pyupgrade
+      args: [--py38-plus]
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.971
+# -   repo: https://github.com/pre-commit/mirrors-ruff
+#     rev: v0.5.0
+#     hooks:
+#     -   id: ruff
+#         args: [--extend-include=*.ipynb, --select=E,F,I,T201]
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.9.0  # Update with the version from pyproject.toml
+  hooks:
+    - id: mypy
+      files: ^hybrid_rag/
+      args: [--ignore-missing-imports]
+
+# -   repo: https://github.com/pre-commit/mirrors-pytest
+#     rev: v7.4.0
+#     hooks:
+#     -   id: pytest
+#         args:
+#         - --strict-markers
+#         - --strict-config
+#         - --durations=5
+#         - --snapshot-warn-unused
+#         - -vv
+
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.2.0
     hooks:
-    -   id: mypy
-        files: ^webrag/
-        args: [--ignore-missing-imports]
+    -   id: codespell
+        args:
+        - --skip
+        - '.git,*.pdf,*.svg,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig,*.csv,.dockerignore,.gitattributes,.gitignore,Dockerfile,Makefile,*.lock,*.toml,*.md,*.conf'
+        - --ignore-regex
+        - '.*(Stati Uniti|Tense=Pres).*'
+        - --ignore-words-list
+        - 'momento,collison,ned,foor,reworkd,parth,whats,aapply,mysogyny,unsecure,damon,crate,aadd,symbl,precesses,accademia,nin,cann'
 
 ci:
-    autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
-    autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
+  autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
+  autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate

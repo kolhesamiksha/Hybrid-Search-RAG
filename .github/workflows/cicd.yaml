@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Cache Poetry dependencies
       uses: actions/cache@v3
@@ -34,6 +34,12 @@ jobs:
     - name: Install Dependencies
       run: poetry install --with lint,dev,typing,codespell
 
+    - name: Install Pre-commit and Hooks
+      run: make install-precommit  # Install pre-commit package and hooks
+
+    - name: Run Pre-commit Hooks
+      run: make run-precommit  # Run all pre-commit hooks
+
     - name: Run Tests
       run: make test
 
@@ -41,7 +47,7 @@ jobs:
       run: make build
 
     - name: Build Docker Image
-      run: docker build -t hybrid-rag-app .
+      run: docker build -t samiksha/hybrid_rag .
 
     - name: Log in to Amazon ECR
       id: login-ecr
