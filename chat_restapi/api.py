@@ -1,38 +1,28 @@
-# Query Expansion modules
-import os
-import sys
+#to install the env variables from .env file
+from typing import List
+from typing import Tuple
 
 from dotenv import load_dotenv
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
-from datetime import datetime
-from typing import List, Tuple
-
-# FastAPI modules
-from fastapi import APIRouter, Response
-from pydantic import BaseModel
-
+from fastapi import APIRouter
+from fastapi import Response
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.rag import RAGChatbot
-from hybrid_rag.src.utils import Logger, ResponseSchema
-
-# st.set_option('global.cache.persist', True)
-current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-logger = Logger().get_logger()
+from hybrid_rag.src.utils import Logger
+from pydantic import BaseModel
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# FastAPI modules
+#install dependencies from hybrid_search python package
 
 rag_router = APIRouter()
-
 
 class ResponseSchema(BaseModel):
     query: str
     history: List[Tuple[str, str]] = []
 
-
 @rag_router.post("/predict")
 async def pred(response: Response, elements: ResponseSchema):
     load_dotenv()
-    question = "heyy mannna"
+    question = "tell me about supply chain consulting"
     history = []
     logger = Logger().get_logger()
     config = Config()
