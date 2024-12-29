@@ -1,3 +1,4 @@
+import os
 from base64 import b64encode
 from typing import List
 from dotenv import load_dotenv
@@ -186,17 +187,19 @@ def conversation_chat(query, history):
     #Optional
     chatbot_instance = RAGChatbot(config, logger)
     response = chatbot_instance.advance_rag_chatbot(query["query"], history)
-    print(f"APP RESPONSE: {response}")
+    print(f"APP RESPONSE: {response}") #response:str,total_time:float,combined_results:list,evaluated_results:dict,token_usage:dict
     if isinstance(response[0], str):
         metrices = {}
         pass
     else:
         print("Not harmful content")
-        context = prepare_context(response[2])
-        metrices = rag_evaluation([query["query"]], [response[0][0]], context)
-        save_history_to_github(query["query"], response)
+        metrices = response[3]
 
-    return response, 
+        if os.getenv('GITHUB_TOKEN') and os.getenv('GITHUB_REPO_NAME') and os.getenv('CHATFILE_PATH'):
+            save_history_to_github(query["query"], response, os.getenv('GITHUB_TOKEN'), os.getenv('GITHUB_REPO_NAME'), os.getenv('CHATFILE_PATH'))
+        else:
+            pass
+    return response 
 
 def main():
     st.set_page_config(
@@ -463,7 +466,7 @@ def main():
                 if st.button("Send", on_click=None):
                     data = {"query": user_input}
                     try:
-                        output, metrices = conversation_chat(
+                        output= conversation_chat(
                             data, st.session_state["history"]
                         )
                         if isinstance(output[0], str):
@@ -489,7 +492,7 @@ def main():
                     for i in range(len(st.session_state["generated"])):
                         with st.container():
                             message_func(st.session_state["past"][i], is_user=True)
-                            if "output" in locals() and "metrices" in locals():
+                            if "output" in locals():
                                 if isinstance(output[0], str):
                                     message_func(
                                         f"<strong>Latency:</strong> {output[1]}s<br>"
