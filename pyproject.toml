@@ -11,6 +11,7 @@ readme = "README.md"
 repository = "https://github.com/kolhesamiksha/Hybrid-Search-RAG"
 keywords = ["streamlit", "langchain", "openai", "rag", "python", "groq", "hybrid search"]
 
+packages = [{ include = "hybrid_rag" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"

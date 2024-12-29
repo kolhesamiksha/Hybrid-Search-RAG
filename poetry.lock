@@ -1749,21 +1749,6 @@ groq = ">=0.4.1,<1"
 langchain-core = ">=0.2.39,<0.3.0"
 
 [[package]]
-name = "langchain-milvus"
-version = "0.1.7"
-description = "An integration package connecting Milvus and LangChain"
-optional = false
-python-versions = "<4.0,>=3.9"
-files = [
-    {file = "langchain_milvus-0.1.7-py3-none-any.whl", hash = "sha256:8d7bef9e7524772db788f996ef9638dea431c034a36cf92a70a31d522eb8ee31"},
-    {file = "langchain_milvus-0.1.7.tar.gz", hash = "sha256:6cc4b58803c853be6766c6ed68723e244e9af101c3cd52e22ccfc05c96b2107c"},
-]
-
-[package.dependencies]
-langchain-core = ">=0.2.38,<0.4"
-pymilvus = ">=2.4.3,<3.0.0"
-
-[[package]]
 name = "langchain-openai"
 version = "0.1.25"
 description = "An integration package connecting OpenAI and LangChain"
@@ -5211,4 +5196,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "5cdeb69be1d4befea95bc9750516c697e16bebe2e8263eb89d376db035ce717d"
+content-hash = "eec5130d4abdd9e5c64c88b4b7c905ed8312af518aa67fe647dd9e1c221853cd"
