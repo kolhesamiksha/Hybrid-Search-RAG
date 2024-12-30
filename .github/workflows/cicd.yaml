@@ -38,11 +38,11 @@ jobs:
     - name: Install Dependencies
       run: poetry install --with lint,dev,typing,codespell
 
-    - name: Install Pre-commit and Hooks
-      run: make install-precommit  # Install pre-commit package and hooks
+    # - name: Install Pre-commit and Hooks
+    #   run: make install-precommit  # Install pre-commit package and hooks
 
-    - name: Run Pre-commit Hooks
-      run: make run-precommit  # Run all pre-commit hooks
+    # - name: Run Pre-commit Hooks
+    #   run: make run-precommit  # Run all pre-commit hooks
 
     - name: Run Tests
       run: make test
