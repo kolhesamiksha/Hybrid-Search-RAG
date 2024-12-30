@@ -13,11 +13,7 @@ on:
 jobs:
   build-and-test-and-deploy:
     name: Build, Test, and Push Docker Image
-    runs-on: ${{snapshots.os}}
-    stratergy:
-      snapshots:
-        os: [ubuntu-latest]
-        python-version: ['3.11']
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Code
