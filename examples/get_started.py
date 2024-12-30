@@ -1,8 +1,8 @@
-from hybrid_rag import RAGChatbot
 from dotenv import load_dotenv
-
 from hybrid_rag import Config
+from hybrid_rag import RAGChatbot
 from hybrid_rag.src.utils import Logger
+
 
 def chatbot():
     load_dotenv()
@@ -14,6 +14,7 @@ def chatbot():
     prediction = chatbot_instance.advance_rag_chatbot(question, history)
     return prediction
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     res = chatbot()
     print(res)
