@@ -20,6 +20,7 @@ COPY .pre-commit-config.yaml .pre-commit-config.yaml
 COPY Makefile Makefile
 COPY poetry.toml poetry.toml
 COPY pyproject.toml pyproject.toml
+COPY README.md README.md
 
 # Optional: If No workflows/cicd setup for build test and deploy.. then use make install, make install-precommit, make run-precommit, make test, make clean etc
 # Build the wheel file using the Makefile
