@@ -13,7 +13,6 @@ from pydantic import BaseModel
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 rag_router = APIRouter()
 
-
 class ResponseSchema(BaseModel):
     query: str
     history: List[Tuple[str, str]] = []
