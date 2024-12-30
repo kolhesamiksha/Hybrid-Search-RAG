@@ -63,12 +63,12 @@ jobs:
 
     - name: Tag Docker Image
       run: |
-        IMAGE_URI=${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
+        IMAGE_URI=${{ secrets.ECR_REGISTRY }}
         docker tag samiksha_hybrid_rag:latest $IMAGE_URI
 
     - name: Push Docker Image
       run: |
-        IMAGE_URI=${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
+        IMAGE_URI=${{ secrets.ECR_REGISTRY }}
         docker push $IMAGE_URI
 
     - name: Deploy to ECS
