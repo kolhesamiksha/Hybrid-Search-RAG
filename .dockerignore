@@ -2,7 +2,6 @@
 .vscode
 .gitignore
 .gitattributes
-.pre-commit-config.yaml
 CHANGELOG.md
 .streamlit
 .github
@@ -14,5 +13,4 @@ design
 examples
 logs
 notebooks
-tests
 README.md

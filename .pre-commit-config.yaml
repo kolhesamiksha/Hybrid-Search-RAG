@@ -42,7 +42,7 @@ repos:
   rev: v3.14.0
   hooks:
     - id: reorder-python-imports
-      args: [--application-directories=.explainit, --py38-plus]
+      args: [--py38-plus]
 
 - repo: https://github.com/asottile/pyupgrade
   rev: v3.19.1
@@ -54,7 +54,7 @@ repos:
     rev: v0.8.4  # Replace with the desired version of ruff
     hooks:
     -   id: ruff
-        args: [--extend-include=*.ipynb, --select=E,F,I,T201]
+        args: [--extend-exclude=*.ipynb,.git,.dockerignore,.github,design,docs,examples,logs,tests,.gitattributes,.gitignore,Dockerfile,Makefile,poetry.toml,pyproject.toml,supervisord.conf, --select=E,F,I,T201]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.14.0  # Update with the version from pyproject.toml
@@ -79,7 +79,7 @@ repos:
     -   id: codespell
         args:
         - --skip
-        - '.git,*.pdf,*.svg,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig,*.csv,.dockerignore,.gitattributes,.gitignore,Dockerfile,Makefile,*.lock,*.toml,*.md,*.conf'
+        - '.git,*.pdf,*.svg,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig,*.csv,.dockerignore,.gitattributes,.gitignore,Dockerfile,Makefile,*.lock,*.toml,*.md,*.conf,Chatbot-streamlit'
         - --ignore-regex
         - '.*(Stati Uniti|Tense=Pres).*'
         - --ignore-words-list
