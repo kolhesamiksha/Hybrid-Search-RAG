@@ -72,9 +72,9 @@ jobs:
         docker push $IMAGE_URI
 
     - name: Deploy to ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v3
       with:
-        cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+        task-definition: task-definition.json
         service: ${{ secrets.ECS_SERVICE_NAME }}
-        image: ${{ secrets.ECR_REGISTRY }}/hybrid-rag-app:latest
-        region: ${{ secrets.AWS_REGION }}
+        cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+        wait-for-service-stability: true
