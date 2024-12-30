@@ -1,9 +1,9 @@
 import os
 from base64 import b64encode
 from typing import List
-from dotenv import load_dotenv
 
 import streamlit as st
+from dotenv import load_dotenv
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.rag import RAGChatbot
 from hybrid_rag.src.utils import Logger
@@ -183,11 +183,13 @@ def conversation_chat(query, history):
     #     "history": history
     # }
     # response = requests.post("https://comparable-clarie-adsds-226b08fd.koyeb.app/predict", json=data)
-    
-    #Optional
+
+    # Optional
     chatbot_instance = RAGChatbot(config, logger)
     response = chatbot_instance.advance_rag_chatbot(query["query"], history)
-    print(f"APP RESPONSE: {response}") #response:str,total_time:float,combined_results:list,evaluated_results:dict,token_usage:dict
+    print(
+        f"APP RESPONSE: {response}"
+    )  # response:str,total_time:float,combined_results:list,evaluated_results:dict,token_usage:dict
     if isinstance(response[0], str):
         metrices = {}
         pass
@@ -195,11 +197,22 @@ def conversation_chat(query, history):
         print("Not harmful content")
         metrices = response[3]
 
-        if os.getenv('GITHUB_TOKEN') and os.getenv('GITHUB_REPO_NAME') and os.getenv('CHATFILE_PATH'):
-            save_history_to_github(query["query"], response, os.getenv('GITHUB_TOKEN'), os.getenv('GITHUB_REPO_NAME'), os.getenv('CHATFILE_PATH'))
+        if (
+            os.getenv("GITHUB_TOKEN")
+            and os.getenv("GITHUB_REPO_NAME")
+            and os.getenv("CHATFILE_PATH")
+        ):
+            save_history_to_github(
+                query["query"],
+                response,
+                os.getenv("GITHUB_TOKEN"),
+                os.getenv("GITHUB_REPO_NAME"),
+                os.getenv("CHATFILE_PATH"),
+            )
         else:
             pass
-    return response 
+    return response
+
 
 def main():
     st.set_page_config(
@@ -466,9 +479,7 @@ def main():
                 if st.button("Send", on_click=None):
                     data = {"query": user_input}
                     try:
-                        output= conversation_chat(
-                            data, st.session_state["history"]
-                        )
+                        output = conversation_chat(data, st.session_state["history"])
                         if isinstance(output[0], str):
                             print("Inside isinstance str")
                             st.session_state["history"].append([user_input, output[0]])
