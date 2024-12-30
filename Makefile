@@ -48,6 +48,7 @@ clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf dist build *.egg-info .mypy_cache .ruff_cache .pytest_cache
 
+#Optional below: IF .pre-commit-config.yaml file is not Present
 # Lint code
 lint:
 	@echo "Running linting with ruff and flake8..."
