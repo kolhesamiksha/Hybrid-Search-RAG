@@ -11,9 +11,6 @@ from hybrid_rag.src.utils import Logger
 from pydantic import BaseModel
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-# FastAPI modules
-# install dependencies from hybrid_search python package
-
 rag_router = APIRouter()
 
 
