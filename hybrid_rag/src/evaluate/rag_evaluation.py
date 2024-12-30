@@ -1,6 +1,12 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import List
 from typing import Optional
+import logging
 
 from datasets import Dataset
 from datasets import Sequence
@@ -22,7 +28,7 @@ class RAGAEvaluator:
         openai_api_base: str,
         groq_api_key: str,
         dense_embedding_model: str,
-        logger: Optional[Logger] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         Initialize the RAG Evaluator class with required configuration
@@ -76,7 +82,7 @@ class RAGAEvaluator:
             )
             return "FAIL"
 
-    def _prepare_context_for_ragas(self, documents: List[List[str]]) -> List[List[str]]:
+    def _prepare_context_for_ragas(self, documents: List[Document]) -> List[List[str]]:
         result = []
         for doc in documents:
             result.append(doc.page_content)
@@ -91,7 +97,7 @@ class RAGAEvaluator:
         :param question: Question as List[str]
         :param answer: answer as List[str]
         :param context: context as List[List[str]]
-        :return Dictionary with metrices and their values
+        :return Dictionary with matrices and their values
         """
         try:
             # Create dataset

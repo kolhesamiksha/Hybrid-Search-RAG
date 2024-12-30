@@ -1,5 +1,11 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import Optional
+import logging
 
 from hybrid_rag.src.utils.logutils import Logger
 from langchain_groq import ChatGroq
@@ -15,7 +21,7 @@ class LLMModelInitializer:
         temperature: Optional[float] = 0.3,
         top_p: Optional[float] = 0.1,
         frequency_penalty: Optional[float] = 1.0,
-        logger: Optional[Logger] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         Initializes the LLMModelInitializer with the necessary parameters.
@@ -46,33 +52,33 @@ class LLMModelInitializer:
         self.llm_model = None
 
     @property
-    def groq_api_key(self):
+    def groq_api_key(self) -> str:
         return self.__groq_api_key
 
     @groq_api_key.setter
-    def groq_api_key(self, value: str):
+    def groq_api_key(self, value: str) -> None:
         if not isinstance(value, str) or not value.strip():
             raise ValueError("groq_api_key must be a non-empty string.")
         self.__groq_api_key = value
 
     # Property for temperature
     @property
-    def temperature(self):
+    def temperature(self) -> float:
         return self._temperature
 
     @temperature.setter
-    def temperature(self, value: float):
+    def temperature(self, value: float) -> None:
         if not (0.0 <= value <= 1.0):
             raise ValueError("temperature must be a float in the range [0.0, 1.0].")
         self._temperature = value
 
     # Property for top_p
     @property
-    def top_p(self):
+    def top_p(self) -> float:
         return self._top_p
 
     @top_p.setter
-    def top_p(self, value: float):
+    def top_p(self, value: float) -> None:
         if not (0.0 <= value <= 1.0):
             raise ValueError("top_p must be a float in the range [0.0, 1.0].")
         self._top_p = value
@@ -83,7 +89,7 @@ class LLMModelInitializer:
         return self._frequency_penalty
 
     @frequency_penalty.setter
-    def frequency_penalty(self, value: float):
+    def frequency_penalty(self, value: float) -> None:
         if not (-2.0 <= value <= 2.0):
             raise ValueError(
                 "frequency_penalty must be a float in the range [-2.0, 2.0]."

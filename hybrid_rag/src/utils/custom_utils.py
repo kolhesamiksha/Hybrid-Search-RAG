@@ -1,9 +1,14 @@
-# SparseEmbeddiing Class modules
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import re
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Mapping
 
 import numpy as np
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -67,11 +72,11 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
         """Validate that FastEmbed has been installed."""
         return values
 
-    def __init__(self, **data):
+    def __init__(self, **data:Mapping[str,Any]) -> None:
         super().__init__(**data)
         self._initialize_model()
 
-    def _initialize_model(self):
+    def _initialize_model(self) -> None:
         """Initialize the FastEmbed model."""
         try:
             # >= v0.2.0
@@ -98,7 +103,9 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
                     "Please install it with `pip install fastembed`."
                 ) from ie
 
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+    def embed_documents(
+        self, texts: List[str]
+    ) -> List[Dict[int, float]]:  # List[List[float]]
         """Generate embeddings for documents using FastEmbed.
 
         Args:
@@ -117,7 +124,7 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
             for embed in embeddings
         ]
 
-    def embed_query(self, text: str) -> List[float]:
+    def embed_query(self, text: str) -> List[Dict[int, float]]:  # List[float]
         """Generate query embeddings using FastEmbed.
 
         Args:
@@ -146,7 +153,7 @@ class LineListOutputParser(BaseOutputParser[List[str]]):
 
 
 class CustomMultiQueryRetriever(MultiQueryRetriever):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs:Mapping[str,Any]) -> None:
         super().__init__(**kwargs)
 
     MULTI_QUERY_PROMPT = PromptTemplate(

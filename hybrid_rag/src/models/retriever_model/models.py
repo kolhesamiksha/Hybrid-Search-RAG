@@ -1,3 +1,8 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import List
 

@@ -1,34 +1,49 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import Optional
+import logging
 
 from hybrid_rag.src.utils.logutils import Logger
 from langchain_core.prompts.prompt import PromptTemplate
+
 
 class SupportPromptGenerator:
     """
     A class to generate a structured support prompt for QA systems.
     """
 
-    def __init__(self, llm_model_name: str, master_prompt:str, llama3_user_tag:str,llama3_system_tag:str,llama3_assistant_tag:str,logger: Optional[Logger] = None):
+    def __init__(
+        self,
+        llm_model_name: str,
+        master_prompt: str,
+        llama3_user_tag: str,
+        llama3_system_tag: str,
+        llama3_assistant_tag: str,
+        logger: Optional[logging.Logger] = None,
+    ):
         """
         Initializes the SupportPromptGenerator with necessary system tags and master prompt.
         """
 
         self.logger = logger if logger else Logger().get_logger()
-        
-        if llm_model_name.contains("llama"):
+
+        if "llama" in llm_model_name:
             self.LLAMA3_SYSTEM_TAG = (
                 "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
             )
         else:
             self.LLAMA3_SYSTEM_TAG = llama3_system_tag
-        
-        if llm_model_name.contains("llama"):
+
+        if "llama" in llm_model_name:
             self.LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
         else:
             self.LLAMA3_USER_TAG = llama3_user_tag
-        
-        if llm_model_name.contains("llama"):
+
+        if "llama" in llm_model_name:
             self.LLAMA3_ASSISTANT_TAG = (
                 "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
             )

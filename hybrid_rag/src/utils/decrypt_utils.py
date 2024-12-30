@@ -1,3 +1,8 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import base64
 import traceback
 
@@ -9,13 +14,13 @@ logger = Logger().get_logger()
 
 
 class AESDecryptor:
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the AESDecryptor with the base64 encoded key.
 
         """
 
-    def __decrypt_pass(self, base64_encoded_key) -> str:
+    def __decrypt_pass(self, base64_encoded_key:str) -> str:
         """
         Decrypts the base64 encoded key and returns the plain text.
 
@@ -40,7 +45,7 @@ class AESDecryptor:
             )
             raise
 
-    def get_plain_text(self, base64_encoded_key) -> str:
+    def get_plain_text(self, base64_encoded_key:str) -> str:
         """
         Public method to get the decrypted plain text.
 

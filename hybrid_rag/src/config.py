@@ -1,3 +1,8 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import os
 from dataclasses import dataclass
 from dataclasses import field
@@ -37,7 +42,10 @@ class Config:
             _get_env_var("CHAT_HISTORY", default_value=2, required=False)
         )
     )
-    MASTER_PROMPT:str = field(default_factory=lambda: _get_env_var("MASTER_PROMPT", default_value="""Please follow below instructions to provide the response:
+    MASTER_PROMPT: str = field(
+        default_factory=lambda: _get_env_var(
+            "MASTER_PROMPT",
+            default_value="""Please follow below instructions to provide the response:
             1. Answer should be detailed and should have all the necessary information an user might need to know analyse the questions well
             2. The user says "Hi" or "Hello." Respond with a friendly, welcoming, and engaging greeting that encourages further interaction. Make sure to sound enthusiastic and approachable.
             3. Make sure to address the user's queries politely.
@@ -47,20 +55,32 @@ class Config:
             7. Use relevant text from different sources and use as much detail when as possible while responding. Take a deep breath and Answer step-by-step.
             8. Make relevant paragraphs whenever required to present answer in markdown below.
             9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
-            10. Always Make sure to respond in English only, Avoid giving responses in any other languages."""),required=False)
-    
-    LLAMA3_SYSTEM_TAG:str = field(default_factory=lambda: _get_env_var("LLAMA3_SYSTEM_TAG", default_value=""),required=False)
-    LLAMA3_USER_TAG:str = field(default_factory=lambda: _get_env_var("LLAMA3_USER_TAG", default_value=""),required=False)
-    LLAMA3_ASSISTANT_TAG:str = field(default_factory=lambda: _get_env_var("LLAMA3_ASSISTANT_TAG", default_value=""),required=False)
+            10. Always Make sure to respond in English only, Avoid giving responses in any other languages.""",
+            required=False
+        )
+    )
 
-    QUESTION_MODERATION_PROMPT:str = field(default_factory=lambda: _get_env_var("QUESTION_MODERATION_PROMPT", default_value="""You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
+    LLAMA3_SYSTEM_TAG: str = field(
+        default_factory=lambda: _get_env_var("LLAMA3_SYSTEM_TAG", default_value="", required=False),
+    )
+    LLAMA3_USER_TAG: str = field(
+        default_factory=lambda: _get_env_var("LLAMA3_USER_TAG", default_value="", required=False)
+    )
+    LLAMA3_ASSISTANT_TAG: str = field(
+        default_factory=lambda: _get_env_var("LLAMA3_ASSISTANT_TAG", default_value="", required=False)
+    )
+
+    QUESTION_MODERATION_PROMPT: str = field(
+        default_factory=lambda: _get_env_var(
+            "QUESTION_MODERATION_PROMPT",
+            default_value="""You are a Content Moderator working for a technology and consulting company, your job is to filter out the queries which are not irrelevant and does not satisfy the intent of the chatbot.
     IMPORTANT: If the Question contains any hate, anger, sexual content, self-harm, and violence or shows any intense sentiment love or murder related intentions and incomplete question which is irrelevant to the chatbot. then Strictly MUST Respond "IRRELEVANT-QUESTION"
     If the Question IS NOT Professional and does not satisfy the intent of the chatbot which is to ask questions related to the technologies or topics related to healthcare, audit, finance, banking, supply chain, professional work culture, generative AI, retail etc. then Strictly MUST Respond "IRRELEVANT-QUESTION".
     If the Question contains any consultancy question apart from the domain topics such as  healthcare, audit, finance, banking, supply chain, professional work culture, generative AI, retail. then Strictly MUST Respond "IRRELEVANT-QUESTION".
     else "NOT-IRRELEVANT-QUESTION"
 
     Examples:
-    Question1: Are womens getting equal opportunities in AI Innovation?
+    Question1: Are women getting equal opportunities in AI Innovation?
     Response1: NOT-IRRELEVANT-QUESTION
 
     Question2: How to navigate the global trends in AI?
@@ -76,7 +96,10 @@ class Config:
     Response5: IRRELEVANT-QUESTION
 
     Question6: Suggest me some mental health tips.
-    Response6: IRRELEVANT-QUESTION"""),required=False)
+    Response6: IRRELEVANT-QUESTION""",
+    required=False
+        )
+    )
 
     IS_EVALUATE: bool = field(
         default_factory=lambda: _get_env_var(
@@ -85,7 +108,7 @@ class Config:
         in ("true", "1", "yes")
     )
 
-    #As the rarnk is more heavy operation
+    # As the rarnk is more heavy operation
     IS_RERANK: bool = field(
         default_factory=lambda: _get_env_var(
             "IS_RERANK", default_value="True", required=False

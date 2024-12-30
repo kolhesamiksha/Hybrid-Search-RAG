@@ -1,5 +1,11 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import Optional
+import logging
 
 from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.utils.logutils import Logger
@@ -16,7 +22,7 @@ class SelfQueryRetrieval:
         dense_embedding_model: str,
         llmModelInstance: LLMModelInitializer,
         vectorDbInstance: VectorStoreManager,
-        logger: Optional[Logger] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         Initialize the SelfQueryRetrieval object with necessary parameters.
@@ -90,7 +96,7 @@ class SelfQueryRetrieval:
             )
             raise
 
-    def retrieve_query(self, question: str):
+    def retrieve_query(self, question: str) -> tuple[str, dict]:
         """
         Retrieves the structured query and search arguments for the given question.
 

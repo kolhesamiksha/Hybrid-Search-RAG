@@ -1,9 +1,14 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import Dict
 from typing import List
 
 from hybrid_rag.src.utils.logutils import Logger
-from hybrid_rag.src.utils.mongo_init import get_database
+from hybrid_rag.src.utils.mongo_init import MongoDBHandler
 
 logger = Logger().get_logger()
 
@@ -24,6 +29,9 @@ class MongoCredentialManager:
         self.connection_string = connection_string
         self.collection_name = collection_name
         self.db_name = db_name
+        self.mongo_clientInitialiser = MongoDBHandler(
+            self.connection_string, self.db_name
+        )
 
     def __get_creds_from_mongo(self) -> List[Dict[str, str]]:
         """
@@ -32,10 +40,12 @@ class MongoCredentialManager:
         :return: Cursor object containing the documents.
         """
         try:
-            dbname = get_database(self.connection_string, self.collection_name)
+            dbname = self.mongo_clientInitialiser.get_or_create_database(
+                self.db_name,
+            )
             collection_name = dbname[self.db_name]  # dbname["credentials"]
             item_details = collection_name.find()
-            logger.info(
+            self.logger.info(
                 f"Successfully get the data from MongoDB from Collection : {self.collection_name} and DB: {self.db_name}"
             )
             return item_details

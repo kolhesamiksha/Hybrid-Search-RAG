@@ -1,4 +1,10 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 from typing import Optional
+import logging
 
 from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
 from hybrid_rag.src.utils.logutils import Logger
@@ -13,8 +19,8 @@ class VectorStoreManager:
         self,
         zilliz_cloud_uri: str,
         zilliz_cloud_api_key: str,
-        logger: Optional[Logger] = None,
-    ):
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
         """
         Initialize the VectorStoreManager with required configuration.
 
@@ -26,7 +32,7 @@ class VectorStoreManager:
         self.zilliz_cloud_uri = zilliz_cloud_uri
         self.__zilliz_cloud_api_key = zilliz_cloud_api_key
 
-    def _connect(self):
+    def _connect(self) -> None:
         """
         Establish connection to Zilliz Cloud using the provided URI and API key.
 
@@ -36,7 +42,7 @@ class VectorStoreManager:
             uri=self.zilliz_cloud_uri, token=self.__zilliz_cloud_api_key
         )
 
-    def load_collection(self, collection_name):
+    def load_collection(self, collection_name:str) -> Collection:
         """
         Load a Milvus collection by name.
 
@@ -54,7 +60,7 @@ class VectorStoreManager:
             self.logger.error(f"Failed to load collection {collection_name}: {str(e)}")
             raise
 
-    def drop_collection(self, collection_name):
+    def drop_collection(self, collection_name:str) -> None:
         """
         Drop a Milvus collection by name.
 
@@ -70,8 +76,8 @@ class VectorStoreManager:
             raise
 
     def initialise_vector_store(
-        self, vector_field, search_params, dense_embedding_model, collection_name
-    ):
+        self, vector_field:str, search_params:dict, dense_embedding_model:str, collection_name:str
+    ) -> Milvus:
         """
         Initialize a vector store with the specified parameters.
 

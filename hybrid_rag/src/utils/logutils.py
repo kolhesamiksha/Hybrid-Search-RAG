@@ -1,10 +1,15 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import logging
 from datetime import datetime
 from pathlib import Path
 
 
 class Logger:
-    def __init__(self, file_name=None, log_dir="logs"):
+    def __init__(self, file_name: str | None = None, log_dir: str = "logs") -> None:
         """
         Initializes the Logger class.
 
@@ -24,19 +29,19 @@ class Logger:
         # Configure logging
         self._configure_logger()
 
-    def _configure_logger(self):
+    def _configure_logger(self) -> None:
         """
         Configures the logger with basic settings.
         """
         logging.basicConfig(
-            level=logging.DEBUG,
+            level=logging.INFO,
             format="%(asctime)s %(levelname)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             filename=str(self.file_path),
         )
         self.logger = logging.getLogger(self.file_path.stem)
 
-    def get_logger(self) -> logging.getLogger:
+    def get_logger(self) -> logging.Logger:
         """
         Returns the logger instance.
 

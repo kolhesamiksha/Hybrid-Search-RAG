@@ -1,4 +1,10 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 from typing import Tuple
+from typing import List
 
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
@@ -44,7 +50,7 @@ class DocumentFormatter:
         return prompt.format(**base_info)
 
     @staticmethod
-    def format_docs(docs: list[Document]) -> str:
+    def format_docs(docs: List[Document]) -> str:
         """
         Format a list of documents into a structured string.
 

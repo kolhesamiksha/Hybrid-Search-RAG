@@ -1,15 +1,20 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import os
 import sys
 import time
 import traceback
 import warnings
+import logging
+
 from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Dict
-
-from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -48,7 +53,7 @@ class RAGChatbot:
     The chatbot can process questions, handle content moderation, perform hybrid search, and interact with a language model.
     """
 
-    def __init__(self, config: Config, logger: Optional[Logger]) -> None:
+    def __init__(self, config: Config, logger: Optional[logging.Logger]) -> None:
         """
         Initializes the RAGChatbot instance with a given configuration.
 
@@ -128,7 +133,7 @@ class RAGChatbot:
 
     def _chatbot(
         self, question: str, formatted_context: str, retrieved_history: List[str]
-    ) -> Tuple[str, int]:
+    ) -> Tuple[str, dict]:
         """
         Generates a response to a question using a pre-defined prompt and a language model. The context and history are provided to the model.
 
@@ -192,11 +197,11 @@ class RAGChatbot:
 
         except Exception as e:
             self.logger.info(f"ERROR: {traceback.format_exc()}")
-            return str(e), 0
+            return str(e), {}
 
     def advance_rag_chatbot(
         self, question: str, history: List[str]
-    ) -> Tuple[str, float, List[Any], Dict[Any], Dict[Any]]:
+    ) -> Tuple[str, float, List[Any], dict, dict]:
         """
         Processes a question through the chatbot pipeline, including content moderation, query expansion, document retrieval, and response generation.
 
@@ -241,14 +246,17 @@ class RAGChatbot:
                     query, self.config.HYBRID_SEARCH_TOPK
                 )
                 combined_results.extend(output)
-
+            self.logger.info(f"Combine results: {combined_results}")
+            self.logger.info(f"Type of Combined results: {type(combined_results)}")
             if self.config.IS_RERANK:
                 # Rank and format the documents.
                 reranked_docs = self.documentReranker.rerank_docs(
                     question, combined_results, self.config.RERANK_TOPK
                 )
+                self.logger.info(f"TYPE OF RERANKED_DOCS1: {type(reranked_docs)}")
             else:
-                reranked_docs = combined_results[-self.config.RERANK_TOPK]
+                reranked_docs = combined_results[-self.config.RERANK_TOPK:]
+                self.logger.info(f"TYPE OF RERANKED_DOCS2: {type(reranked_docs)}")
             formatted_context = self.docFormatter.format_docs(reranked_docs)
 
             # Generate the chatbot response.

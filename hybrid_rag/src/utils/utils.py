@@ -1,14 +1,24 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import base64
 import io
 import traceback
+from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import pandas as pd
 from github import Github
 
 # TODO:add Logger & exceptions
 
-def save_history_to_github(query, response, github_token, repo_name, chatfile_name):
+
+def save_history_to_github(query:str, response:Tuple[str, float, List[Any], Dict[Any], Dict[Any]], github_token:str, repo_name:str, chatfile_name:str) -> None:
     try:
         g = Github(github_token)
         repo = g.get_repo(repo_name)
@@ -25,7 +35,8 @@ def save_history_to_github(query, response, github_token, repo_name, chatfile_na
     except Exception:
         print(traceback.format_exc())
 
-def calculate_cost(total_usage: Dict):
+
+def calculate_cost(total_usage: Dict) -> float:
     # specific for gpt-4o, not generic
     completion_tokens = total_usage["token_usage"]["completion_tokens"]
     prompt_tokens = total_usage["token_usage"]["prompt_tokens"]

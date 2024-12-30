@@ -1,12 +1,18 @@
+"""
+Module Name: hybrid_search.py
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
 import traceback
 from typing import List
 from typing import Optional
+import logging
 
 from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from hybrid_rag.src.utils.custom_utils import CustomMultiQueryRetriever
 from hybrid_rag.src.utils.logutils import Logger
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 logger = Logger().get_logger()
 
@@ -19,8 +25,8 @@ class CustomQueryExpander:
         dense_embedding_model: str,
         llmModelInstance: LLMModelInitializer,
         vectorDbInstance=VectorStoreManager,
-        logger: Optional[Logger] = None,
-    ):
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
         """
         Initialize the CustomQueryExpander with LLM model and search parameters.
 
