@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "hybrid-rag"
-version = "0.0.1"
+version = "0.1.0"
 description = "A Hybrid-search RAG repository"
 authors = ["Samiksha Kolhe <kolhesamiksha25@gmail.com>"]
 readme = "README.md"
@@ -79,7 +79,7 @@ codespell = "^2.2.0"
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "T201"]
+select = ["I", "T201"]
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config --durations=5 -vv"
@@ -88,7 +88,6 @@ markers = [
     "scheduled: mark tests to run in scheduled testing",
     "compile: mark placeholder test used to compile integration tests without running them",
 ]
-asyncio_mode = "auto"
 
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,*.pdf,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig'
