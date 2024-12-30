@@ -2,7 +2,7 @@
 
 repos:
 - repo: https://github.com/psf/black
-  rev: stable  # Use the latest stable version
+  rev: 24.10.0  # Use the latest stable version
   hooks:
     - id: black
       args: [--safe]
@@ -22,58 +22,59 @@ repos:
       language_version: python3
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.5.0  # Update with the version from pyproject.toml
+  rev: v0.8.4  # Update with the version from pyproject.toml
   hooks:
     - id: ruff
       args:
         - --fix
+        - --extend-include=*.ipynb
+        - --select=I,T201
     - id: ruff-format
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0  # Update with the version from pyproject.toml
+  rev: 7.1.1  # Update with the version from pyproject.toml
   hooks:
     - id: flake8
-      args: [--exclude=tests,examples,docs]
+      args: [--max-line-length=1000,--exclude=tests,examples,docs,logs,tests,notebooks,design,Chatbot-streamlit,.github]
       language_version: python3
 
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.8.0
+  rev: v3.14.0
   hooks:
     - id: reorder-python-imports
       args: [--application-directories=.explainit, --py38-plus]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.37.3
+  rev: v3.19.1
   hooks:
     - id: pyupgrade
       args: [--py38-plus]
 
-# -   repo: https://github.com/pre-commit/mirrors-ruff
-#     rev: v0.5.0
-#     hooks:
-#     -   id: ruff
-#         args: [--extend-include=*.ipynb, --select=E,F,I,T201]
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.8.4  # Replace with the desired version of ruff
+    hooks:
+    -   id: ruff
+        args: [--extend-include=*.ipynb, --select=E,F,I,T201]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.9.0  # Update with the version from pyproject.toml
+  rev: v1.14.0  # Update with the version from pyproject.toml
   hooks:
     - id: mypy
       files: ^hybrid_rag/
       args: [--ignore-missing-imports]
 
-# -   repo: https://github.com/pre-commit/mirrors-pytest
-#     rev: v7.4.0
-#     hooks:
-#     -   id: pytest
-#         args:
-#         - --strict-markers
-#         - --strict-config
-#         - --durations=5
-#         - --snapshot-warn-unused
-#         - -vv
+# - repo: local
+#    hooks:
+#     - id: pytest
+#       name: pytest
+#       entry: ./.venv/bin/pytest tests
+#       language: system
+#       types: [python]
+#       pass_filenames: false
+#       always_run: true
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.0
+    rev: v2.3.0
     hooks:
     -   id: codespell
         args:

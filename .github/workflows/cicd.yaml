@@ -1,15 +1,23 @@
 # Workflow YAML file
-name: Build and Deploy Hybrid RAG
+name: Build Test and Deploy Hybrid RAG
 
 on:
   push:
     branches:
-      - #define branch name
+      - main
+    paths:
+      - chat_restapi/**
+      - chat_streamlit_app/**
+      - hybrid_rag/**
 
 jobs:
-  build-and-test:
+  build-and-test-and-deploy:
     name: Build, Test, and Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ${{snapshots.os}}
+    stratergy:
+      snapshots:
+        os: [ubuntu-latest]
+        python-version: ['3.11']
 
     steps:
     - name: Checkout Code
@@ -43,8 +51,8 @@ jobs:
     - name: Run Tests
       run: make test
 
-    - name: Build Wheel File
-      run: make build
+    # - name: Build Wheel File
+    #   run: make build
 
     - name: Build Docker Image
       run: docker build -t samiksha/hybrid_rag .
