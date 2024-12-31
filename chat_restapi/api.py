@@ -19,6 +19,7 @@ class ResponseSchema(BaseModel):
     history: List[Tuple[str, str]] = []
 
 
+
 @rag_router.post("/predict")
 async def pred(response: Response, elements: ResponseSchema):
     load_dotenv()
