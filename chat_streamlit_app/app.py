@@ -9,7 +9,7 @@ from hybrid_rag.src.rag import RAGChatbot
 from hybrid_rag.src.utils import Logger
 from hybrid_rag.src.utils.utils import save_history_to_github
 
-load_dotenv()
+load_dotenv(dotenv_path=".env.example")
 logger = Logger().get_logger()
 config = Config()
 
