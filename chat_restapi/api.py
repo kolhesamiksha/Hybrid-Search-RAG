@@ -22,7 +22,7 @@ class ResponseSchema(BaseModel):
 
 @rag_router.post("/predict")
 async def pred(response: Response, elements: ResponseSchema):
-    load_dotenv()
+    load_dotenv(dotenv_path=".env.example")
     question = "tell me about supply chain consulting"
     history = []
     logger = Logger().get_logger()
