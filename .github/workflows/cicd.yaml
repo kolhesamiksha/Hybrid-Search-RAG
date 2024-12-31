@@ -77,5 +77,4 @@ jobs:
         task-definition: task-definition.json
         service: ${{ secrets.ECS_SERVICE_NAME }}
         cluster: ${{ secrets.ECS_CLUSTER_NAME }}
-        region: ${{ secrets.AWS_REGION }}
         wait-for-service-stability: true
