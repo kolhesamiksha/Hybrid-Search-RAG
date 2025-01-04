@@ -8,7 +8,7 @@ from typing import Optional
 import logging
 
 from hybrid_rag.src.utils.logutils import Logger
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 
 logger = Logger().get_logger()
 
@@ -16,8 +16,9 @@ logger = Logger().get_logger()
 class LLMModelInitializer:
     def __init__(
         self,
-        llm_model_name: str = "",
-        groq_api_key: str = "",
+        llm_model_name: str,
+        provider_base_url: str,
+        groq_api_key: str,
         temperature: Optional[float] = 0.3,
         top_p: Optional[float] = 0.1,
         frequency_penalty: Optional[float] = 1.0,
@@ -37,6 +38,7 @@ class LLMModelInitializer:
         self.logger = logger if logger else Logger().get_logger()
         self.llm_model_name = llm_model_name
         self.__groq_api_key = groq_api_key  # Make API key private
+        self.base_url = provider_base_url
         if temperature is not None:
             self.temperature = temperature
         else:
@@ -96,15 +98,24 @@ class LLMModelInitializer:
             )
         self._frequency_penalty = value
 
-    def initialise_llm_model(self) -> Optional[ChatGroq]:
+    def initialise_llm_model(self) -> Optional[ChatOpenAI]:
         """
         Initializes and returns the LLM model.
 
         :return: An instance of the initialized LLM model.
         """
         try:
-            self.llm_model = ChatGroq(
+            # self.llm_model = ChatGroq(
+            #     model=self.llm_model_name,
+            #     api_key=self.__groq_api_key,  # Access private key
+            #     temperature=self._temperature,
+            #     top_p=self._top_p,
+            #     frequency_penalty=self._frequency_penalty,
+            #     max_retries=2,
+            # )
+            self.llm_model = ChatOpenAI(
                 model=self.llm_model_name,
+                base_url=self.base_url,
                 api_key=self.__groq_api_key,  # Access private key
                 temperature=self._temperature,
                 top_p=self._top_p,

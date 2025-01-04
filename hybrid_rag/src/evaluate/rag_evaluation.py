@@ -6,17 +6,26 @@ Version: 0.1.0
 import traceback
 from typing import List
 from typing import Optional
+from typing import Tuple
 import logging
+import asyncio
+from langchain_openai import ChatOpenAI
 
 from datasets import Dataset
 from datasets import Sequence
 from hybrid_rag.src.utils.logutils import Logger
+from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
+
 from ragas import evaluate
 from ragas.llms import LangchainLLMWrapper
-from ragas.metrics import faithfulness
+from ragas import SingleTurnSample
+from ragas.metrics import LLMContextPrecisionWithoutReference
+from ragas.metrics import faithfulness, answer_relevancy
+from ragas.metrics import LLMContextRecall
+from ragas.metrics import ResponseRelevancy
 
 # from ragas.metrics.critique import harmfulness, correctness
 
@@ -24,25 +33,23 @@ from ragas.metrics import faithfulness
 class RAGAEvaluator:
     def __init__(
         self,
-        llm_model_name: str,
-        openai_api_base: str,
-        groq_api_key: str,
         dense_embedding_model: str,
+        llmModelInstance: LLMModelInitializer,
         logger: Optional[logging.Logger] = None,
     ):
         """
         Initialize the RAG Evaluator class with required configuration
 
         :param llm_model_name: LLM model name
-        :param openai_api_base: RAGAS support ChatOpenAI functionality, provide openai_api_base e.g https://api.openai.com/v1
+        :param openai_api_base: RAGAS support ChatOpenAI API compatibility , provide openai_api_base e.g https://api.openai.com/v1
         :param groq_api_key: groq api key for ChatOpenAI
         :param dense_embedding_model: dense embedding model param for embeddings
         """
 
         self.logger = logger if logger else Logger().get_logger()
-        self.llm_model_name = llm_model_name
-        self.openai_api_base = openai_api_base
-        self.__groq_api_key = groq_api_key
+        self.llmModelInstance = llmModelInstance
+        self.llmModel_initializer = self.llmModelInstance.initialise_llm_model()
+        self.langchainLLMWrapper = LangchainLLMWrapper(self.llmModel_initializer)
         self.dense_embedding_model = dense_embedding_model
 
     def _validate_column_dtypes(self, ds: Dataset) -> str:
@@ -82,6 +89,28 @@ class RAGAEvaluator:
             )
             return "FAIL"
 
+    async def context_precision_without_reference(self, input:str, answer:str, context:List[str]):
+        sample = SingleTurnSample(
+            user_input=input,
+            response=answer,
+            retrieved_contexts=context, 
+        )
+
+        context_precision = LLMContextPrecisionWithoutReference(llm=self.langchainLLMWrapper)
+        scorer = await context_precision.single_turn_ascore(sample)
+        return scorer
+
+    async def answer_relevancy(self, input:str, answer:str, context:List[str]):
+        sample = SingleTurnSample(
+            user_input=input,
+            response=answer,
+            retrieved_contexts=context, 
+        )
+
+        answer_relevancy = ResponseRelevancy(llm=self.langchainLLMWrapper)
+        scorer = await answer_relevancy.single_turn_ascore(sample)
+        return scorer
+
     def _prepare_context_for_ragas(self, documents: List[Document]) -> List[List[str]]:
         result = []
         for doc in documents:
@@ -90,7 +119,7 @@ class RAGAEvaluator:
 
     def evaluate_rag(
         self, question: List[str], answer: List[str], context: List[Document]
-    ) -> dict:
+    ) -> Tuple[dict, float]:
         """
         Evaluate the RAG model with given questions, answers, and context
 
@@ -112,30 +141,40 @@ class RAGAEvaluator:
 
             self.logger.info("Successfully validated the dataset for RAG evaluation.")
 
-            # Initialize LLM and embeddings
-            llm_chat = ChatOpenAI(
-                model=self.llm_model_name,
-                openai_api_base=self.openai_api_base,
-                openai_api_key=self.__groq_api_key,
-            )
-
-            evaluation_chat_model = LangchainLLMWrapper(llm_chat)
             evaluation_embeddings = FastEmbedEmbeddings(
                 model_name=self.dense_embedding_model
             )
 
+            try:
+                context_precision = asyncio.run(self.context_precision_without_reference(question[0], answer[0], contexts[0]))
+                self.logger.info(f"Successfully Caluclated the Context Precision Metrics SCORE: {context_precision}")
+            except Exception as e:
+                error = str(e)
+                self.logger.error("Failed to Calculate Context precision Metrics")
+                raise
+
+            # try:
+            #     answer_relevancy = asyncio.run(self.answer_relevancy(question[0], answer[0], contexts[0]))
+            #     self.logger.info(f"Successfully Caluclated the Answer Relevancy Metrics SCORE: {answer_relevancy}")
+            # except Exception as e:
+            #     error = str(e)
+            #     self.logger.error("Failed to Calculate Answer Relevancy Metrics")
+            #     raise
+            
             # Perform evaluation
             result = evaluate(
                 rag_dataset,
-                metrics=[faithfulness],  # context_utilization, harmfulness, correctness
-                llm=evaluation_chat_model,
+                metrics=[faithfulness,answer_relevancy],  # context_utilization, harmfulness, correctness
+                llm=self.langchainLLMWrapper,
                 embeddings=evaluation_embeddings,
             )
-
+            self.logger.info(f"type of result: {result}")
+            #result['context_precision'] = context_precision
+            # result['answer_relevancy'] = answer_relevancy
             self.logger.info(
                 "Successfully evaluated the questions, answers, and context."
             )
-            return result
+            return (result, context_precision)
 
         except Exception as e:
             error = str(e)

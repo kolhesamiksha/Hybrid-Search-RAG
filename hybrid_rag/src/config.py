@@ -32,9 +32,9 @@ class Config:
         )
     )
 
-    GROQ_API_KEY: str = field(default_factory=lambda: _get_env_var("GROQ_API_KEY"))
-    OPENAI_API_BASE: str = field(
-        default_factory=lambda: _get_env_var("OPENAI_API_BASE")
+    LLM_API_KEY: str = field(default_factory=lambda: _get_env_var("LLM_API_KEY"))
+    PROVIDER_BASE_URL: str = field(
+        default_factory=lambda: _get_env_var("PROVIDER_BASE_URL")
     )
     # Chat History Configuration
     NO_HISTORY: int = field(
@@ -60,14 +60,22 @@ class Config:
         )
     )
 
-    LLAMA3_SYSTEM_TAG: str = field(
-        default_factory=lambda: _get_env_var("LLAMA3_SYSTEM_TAG", default_value="", required=False),
+    MODEL_SPECIFIC_PROMPT_SYSTEM_TAG: str = field(
+        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_SYSTEM_TAG", default_value="", required=False),
     )
-    LLAMA3_USER_TAG: str = field(
-        default_factory=lambda: _get_env_var("LLAMA3_USER_TAG", default_value="", required=False)
+    MODEL_SPECIFIC_PROMPT_USER_TAG: str = field(
+        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_USER_TAG", default_value="", required=False)
     )
-    LLAMA3_ASSISTANT_TAG: str = field(
-        default_factory=lambda: _get_env_var("LLAMA3_ASSISTANT_TAG", default_value="", required=False)
+    MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG: str = field(
+        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG", default_value="", required=False)
+    )
+
+    MLFLOW_TRACKING_URI: str = field(
+        default_factory=lambda: _get_env_var("MLFLOW_TRACKING_URI", default_value="", required=False)
+    )
+
+    MLFLOW_EXPERIMENT_NAME:str = field(
+        default_factory=lambda: _get_env_var("MLFLOW_EXPERIMENT_NAME", default_value="hybrid_rag_exp", required=False)
     )
 
     QUESTION_MODERATION_PROMPT: str = field(

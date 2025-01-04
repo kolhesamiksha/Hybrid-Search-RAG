@@ -31,19 +31,19 @@ class SupportPromptGenerator:
 
         self.logger = logger if logger else Logger().get_logger()
 
-        if "llama" in llm_model_name:
+        if "llama" in llm_model_name and not llama3_system_tag:
             self.LLAMA3_SYSTEM_TAG = (
                 "<|begin_of_text|><|start_header_id|>system<|end_header_id|>"
             )
         else:
             self.LLAMA3_SYSTEM_TAG = llama3_system_tag
 
-        if "llama" in llm_model_name:
+        if "llama" in llm_model_name and not llama3_user_tag:
             self.LLAMA3_USER_TAG = "<|eot_id|><|start_header_id|>user<|end_header_id|>"
         else:
             self.LLAMA3_USER_TAG = llama3_user_tag
 
-        if "llama" in llm_model_name:
+        if "llama" in llm_model_name and not llama3_assistant_tag:
             self.LLAMA3_ASSISTANT_TAG = (
                 "<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
             )
