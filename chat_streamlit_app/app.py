@@ -16,7 +16,6 @@ config = Config()
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
-
 def initialize_session_state():
     if "history" not in st.session_state:
         st.session_state["history"] = []
@@ -36,15 +35,17 @@ def initialize_session_state():
     if "persona" not in st.session_state:
         st.session_state["persona"] = "Chatbot Assistant"  # Default password
 
-
 def login_section():
+    if "username" not in st.session_state:
+        st.session_state["username"] = ""
+    if "persona" not in st.session_state:
+        st.session_state["persona"] = ""
     # Display login form
     username = st.text_input(
-        "username", key="username", placeholder="Enter your name here"
+        "Username", placeholder="Enter your name here",
     )
     persona = st.text_input(
         "Perosna",
-        key="persona",
         placeholder="Enter your persona for your chatbot personalization",
     )
     if st.button("Save"):
@@ -52,9 +53,11 @@ def login_section():
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
             st.session_state["persona"] = persona
+            logger.info(f"Successfully saved Username={st.session_state['username']} & Persona={st.session_state['persona']}")
             st.rerun()
         else:
-            st.error("Invalid credentials. Please try again.")
+            logger.info(f"Please Provide Username or persona")
+            st.error("Please Provide Username or persona")
     else:
         pass
 
@@ -187,6 +190,7 @@ def conversation_chat(query, history):
     # Optional
     chatbot_instance = RAGChatbot(config, logger)
     response = chatbot_instance.advance_rag_chatbot(query["query"], history)
+    logger.info(f"CHATBOT RESPONSE: {response}")
     print(
         f"APP RESPONSE: {response}"
     )  # response:str,total_time:float,combined_results:list,evaluated_results:dict,token_usage:dict
