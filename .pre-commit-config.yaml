@@ -63,15 +63,13 @@ repos:
       files: ^hybrid_rag/
       args: [--ignore-missing-imports]
 
-# - repo: local
-#    hooks:
-#     - id: pytest
-#       name: pytest
-#       entry: ./.venv/bin/pytest tests
-#       language: system
-#       types: [python]
-#       pass_filenames: false
-#       always_run: true
+- repo: local
+  hooks:
+    - id: generate-changelog
+      name: Generate Changelog
+      entry: towncrier build --yes
+      language: system
+      stages: [commit-msg]
 
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
