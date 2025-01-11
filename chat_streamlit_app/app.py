@@ -4,10 +4,12 @@ from typing import List
 
 import streamlit as st
 from dotenv import load_dotenv
+
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.rag import RAGChatbot
 from hybrid_rag.src.utils import Logger
 from hybrid_rag.src.utils.utils import save_history_to_github
+from hybrid_rag.src.utils.utils import save_history_to_s3
 
 load_dotenv(dotenv_path=".env.example")
 logger = Logger().get_logger()
@@ -15,6 +17,7 @@ config = Config()
 
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
+
 
 def initialize_session_state():
     if "history" not in st.session_state:
@@ -35,6 +38,7 @@ def initialize_session_state():
     if "persona" not in st.session_state:
         st.session_state["persona"] = "Chatbot Assistant"  # Default password
 
+
 def login_section():
     if "username" not in st.session_state:
         st.session_state["username"] = ""
@@ -42,7 +46,8 @@ def login_section():
         st.session_state["persona"] = ""
     # Display login form
     username = st.text_input(
-        "Username", placeholder="Enter your name here",
+        "Username",
+        placeholder="Enter your name here",
     )
     persona = st.text_input(
         "Perosna",
@@ -53,7 +58,9 @@ def login_section():
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
             st.session_state["persona"] = persona
-            logger.info(f"Successfully saved Username={st.session_state['username']} & Persona={st.session_state['persona']}")
+            logger.info(
+                f"Successfully saved Username={st.session_state['username']} & Persona={st.session_state['persona']}"
+            )
             st.rerun()
         else:
             logger.info(f"Please Provide Username or persona")
@@ -181,6 +188,7 @@ def conversation_chat(query, history):
     # logger.info(f"Query {query}")
     # logger.info(f"History {history}")
     print("Inside API")
+    load_dotenv(dotenv_path=".env.example")
     # data = {
     #     "query": query['query'],
     #     "history": history
@@ -192,26 +200,35 @@ def conversation_chat(query, history):
     response = chatbot_instance.advance_rag_chatbot(query["query"], history)
     logger.info(f"CHATBOT RESPONSE: {response}")
     print(
-        f"APP RESPONSE: {response}"
+        f"TYPE of APP RESPONSE: {type(response[0])}"
+        f"Total time : {response[1]}"
+        f"Evaluated Results : {type(response[2])}"
+        f"Metrics : {response[3]}"
+        f"Total Cost : {response[4]}"
     )  # response:str,total_time:float,combined_results:list,evaluated_results:dict,token_usage:dict
-    if isinstance(response[0], str):
-        metrices = {}
-        pass
-    else:
-        print("Not harmful content")
-        metrices = response[3]
-
-        if (
-            os.getenv("GITHUB_TOKEN")
-            and os.getenv("GITHUB_REPO_NAME")
-            and os.getenv("CHATFILE_PATH")
-        ):
+    if response[0]:
+        print("=====Not harmful content==========")
+        print(f"IS_GITHUB TYPE: {type(os.getenv('IS_GITHUB'))}")
+        print(f"IS_GITHUB: {os.getenv('IS_GITHUB')}")
+        print(f"IS_GITHUB TYPE: {type(os.getenv('IS_AWS'))}")
+        print(f"IS_GITHUB: {os.getenv('IS_AWS')}")
+        if os.getenv("IS_GITHUB") == True:
             save_history_to_github(
                 query["query"],
                 response,
                 os.getenv("GITHUB_TOKEN"),
                 os.getenv("GITHUB_REPO_NAME"),
                 os.getenv("CHATFILE_PATH"),
+            )
+        elif os.getenv("IS_AWS"):
+            print("*************Inside AWS*********")
+            save_history_to_s3(
+                query["query"],
+                response,
+                os.getenv("S3_BUCKET"),
+                os.getenv("S3_CSV_FILENAME"),
+                os.getenv("AWS_ACCESS_KEY_ID"),
+                os.getenv("AWS_SECRET_ACCESS_KEY"),
             )
         else:
             pass
@@ -490,40 +507,47 @@ def main():
                             st.session_state["past"].append(user_input)
                             st.session_state["generated"].append(output[0])
                         else:
-                            st.session_state["history"].append(
-                                [user_input, output[0][0]]
-                            )
+                            st.session_state["history"].append([user_input, output[0]])
                             # st.session_state["df"].append({"Question":user_input, "Answer":output[0][0], "Latency":output[1], "Total_Cost($)":output[0][1]})  #we can store this data to mongo or s3 for qa fine-tuning.
                             st.session_state["past"].append(user_input)
-                            st.session_state["generated"].append(output[0][0])
+                            st.session_state["generated"].append(output[0])
                     except Exception:
                         st.session_state["generated"].append(
                             "There is some issue with API Key, Usage Limit exceeds for the Day!!"
                         )
 
             if st.session_state["generated"]:
-                print(st.session_state["generated"])
                 with container:
                     for i in range(len(st.session_state["generated"])):
                         with st.container():
                             message_func(st.session_state["past"][i], is_user=True)
                             if "output" in locals():
                                 if isinstance(output[0], str):
+                                    if not output[3]:
+                                        faithfullness = "NULL"
+                                        answer_relevancy = "NULL"
+                                        context_precision = "NULL"
+                                    else:
+                                        faithfullness = output[3][0]["faithfulness"]
+                                        answer_relevancy = output[3][0][
+                                            "answer-relevancy"
+                                        ]
+                                        context_precision = output[3][1][
+                                            "answer-relevancy"
+                                        ]
                                     message_func(
                                         f"<strong>Latency:</strong> {output[1]}s<br>"
+                                        f"<strong>Total Cost:</strong> ${output[4]}<br>"
+                                        f"<strong>Faithfullness:</strong> {faithfullness}<br>"
+                                        f"<strong>Answer-Relevancy</strong> {answer_relevancy}<br>"
+                                        f"<strong>Context-Precision</strong> {context_precision}<br>"
                                         f'{st.session_state["generated"][i]}',
                                         is_user=False,
                                     )
                                 else:
                                     message_func(
-                                        f"<strong>Latency:</strong> {output[1]}s<br>"
-                                        f'<strong>Faithfullness:</strong> {metrices["faithfulness"]}<br>'
-                                        f'<strong>Context_Utilization:</strong> {metrices["context_utilization"]}<br>'
-                                        f'<strong>Harmfulness:</strong> {metrices["harmfulness"]}<br>'
-                                        f'<strong>Correctness:</strong> {metrices["correctness"]}<br>'
-                                        f'<strong>Completion Tokens:</strong> {output[0][1]["token_usage"]["completion_tokens"]}<br>'
-                                        f'<strong>Prompt Tokens:</strong> {output[0][1]["token_usage"]["prompt_tokens"]}<br>'
-                                        f'{st.session_state["generated"][i]}',
+                                        f"<strong>Latency:</strong> {output[1]}s<br>",
+                                        f'{st.session_state["generated"][0]}',
                                         is_user=False,
                                     )
                                 # message_func(f"**Latency**:{output[1]}s\t\t\t**Total_Cost**: ${output[0][1]}\n{st.session_state['generated'][i]}")
