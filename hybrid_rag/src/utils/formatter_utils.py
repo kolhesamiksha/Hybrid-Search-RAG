@@ -3,8 +3,8 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
-from typing import Tuple
 from typing import List
+from typing import Tuple
 
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage

@@ -3,12 +3,14 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import logging
 import traceback
 from typing import Optional
-import logging
+
+import mlflow
+from langchain_openai import ChatOpenAI
 
 from hybrid_rag.src.utils.logutils import Logger
-from langchain_openai import ChatOpenAI
 
 logger = Logger().get_logger()
 
@@ -116,7 +118,7 @@ class LLMModelInitializer:
             self.llm_model = ChatOpenAI(
                 model=self.llm_model_name,
                 base_url=self.base_url,
-                api_key=self.__groq_api_key,  # Access private key
+                openai_api_key=self.__groq_api_key,  # Access private key
                 temperature=self._temperature,
                 top_p=self._top_p,
                 frequency_penalty=self._frequency_penalty,

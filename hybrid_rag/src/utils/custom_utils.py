@@ -7,8 +7,8 @@ import re
 from typing import Any
 from typing import Dict
 from typing import List
-from typing import Optional
 from typing import Mapping
+from typing import Optional
 
 import numpy as np
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -72,7 +72,7 @@ class SparseFastEmbedEmbeddings(BaseModel, Embeddings):
         """Validate that FastEmbed has been installed."""
         return values
 
-    def __init__(self, **data:Mapping[str,Any]) -> None:
+    def __init__(self, **data: Mapping[str, Any]) -> None:
         super().__init__(**data)
         self._initialize_model()
 
@@ -153,7 +153,7 @@ class LineListOutputParser(BaseOutputParser[List[str]]):
 
 
 class CustomMultiQueryRetriever(MultiQueryRetriever):
-    def __init__(self, **kwargs:Mapping[str,Any]) -> None:
+    def __init__(self, **kwargs: Mapping[str, Any]) -> None:
         super().__init__(**kwargs)
 
     MULTI_QUERY_PROMPT = PromptTemplate(

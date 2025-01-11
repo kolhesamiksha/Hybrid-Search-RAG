@@ -3,18 +3,20 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import logging
 import traceback
 from typing import List
 from typing import Optional
-import logging
 
-from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
-from hybrid_rag.src.utils.logutils import Logger
-from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain_community.document_compressors.flashrank_rerank import FlashrankRerank
 from langchain_community.vectorstores import Milvus
 from langchain_core.documents import Document
+
+from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
+from hybrid_rag.src.utils.logutils import Logger
+from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
+
 
 class DocumentReranker:
     def __init__(
@@ -80,7 +82,9 @@ class DocumentReranker:
             )
             raise
 
-    def rerank_docs(self, question: str, docs_to_rerank:List[Document], rerank_topk: int) -> List[Document]:
+    def rerank_docs(
+        self, question: str, docs_to_rerank: List[Document], rerank_topk: int
+    ) -> List[Document]:
         """
         Reranks documents based on the given question and returns the top-ranked documents.
 

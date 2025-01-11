@@ -8,6 +8,7 @@ import traceback
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
+
 from hybrid_rag.src.utils.logutils import Logger
 
 logger = Logger().get_logger()
@@ -20,7 +21,7 @@ class AESDecryptor:
 
         """
 
-    def __decrypt_pass(self, base64_encoded_key:str) -> str:
+    def __decrypt_pass(self, base64_encoded_key: str) -> str:
         """
         Decrypts the base64 encoded key and returns the plain text.
 
@@ -45,7 +46,7 @@ class AESDecryptor:
             )
             raise
 
-    def get_plain_text(self, base64_encoded_key:str) -> str:
+    def get_plain_text(self, base64_encoded_key: str) -> str:
         """
         Public method to get the decrypted plain text.
 

@@ -32,7 +32,9 @@ class ResponseSchema(BaseModel):
 
 
 @rag_router.post("/predict")
-async def pred(response: Response, elements: ResponseSchema) -> Tuple[str, float, List[Any], dict, dict]:
+async def pred(
+    response: Response, elements: ResponseSchema
+) -> Tuple[str, float, List[Any], dict, dict]:
     load_dotenv()
     question = "heyy mannna"
     history = []

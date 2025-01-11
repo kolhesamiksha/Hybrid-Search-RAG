@@ -3,15 +3,16 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
-from typing import Optional
 import logging
+from typing import Optional
 
-from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
-from hybrid_rag.src.utils.logutils import Logger
 from langchain_community.vectorstores import Milvus
 from pymilvus import Collection
 from pymilvus import connections
 from pymilvus import utility
+
+from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
+from hybrid_rag.src.utils.logutils import Logger
 
 
 class VectorStoreManager:
@@ -42,7 +43,7 @@ class VectorStoreManager:
             uri=self.zilliz_cloud_uri, token=self.__zilliz_cloud_api_key
         )
 
-    def load_collection(self, collection_name:str) -> Collection:
+    def load_collection(self, collection_name: str) -> Collection:
         """
         Load a Milvus collection by name.
 
@@ -60,7 +61,7 @@ class VectorStoreManager:
             self.logger.error(f"Failed to load collection {collection_name}: {str(e)}")
             raise
 
-    def drop_collection(self, collection_name:str) -> None:
+    def drop_collection(self, collection_name: str) -> None:
         """
         Drop a Milvus collection by name.
 
@@ -76,7 +77,11 @@ class VectorStoreManager:
             raise
 
     def initialise_vector_store(
-        self, vector_field:str, search_params:dict, dense_embedding_model:str, collection_name:str
+        self,
+        vector_field: str,
+        search_params: dict,
+        dense_embedding_model: str,
+        collection_name: str,
     ) -> Milvus:
         """
         Initialize a vector store with the specified parameters.

@@ -3,16 +3,17 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import logging
 import traceback
 from typing import List
 from typing import Optional
-import logging
+
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.utils.custom_utils import CustomMultiQueryRetriever
 from hybrid_rag.src.utils.logutils import Logger
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 logger = Logger().get_logger()
 

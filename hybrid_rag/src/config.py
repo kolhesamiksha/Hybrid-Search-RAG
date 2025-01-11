@@ -20,6 +20,16 @@ class Config:
             "LLM_MODEL_NAME", default_value="llama-3.1-70b-versatile"
         )
     )
+    INPUT_TOKENS_PER_MILLION_COST: float = field(
+        default_factory=lambda: _get_env_var(
+            "INPUT_TOKENS_PER_MILLION_COST", default_value=0.0025
+        )
+    )
+    OUTPUT_TOKENS_PER_MILLION_COST: float = field(
+        default_factory=lambda: _get_env_var(
+            "OUTPUT_TOKENS_PER_MILLION_COST", default_value=0.0064
+        )
+    )
     DENSE_EMBEDDING_MODEL: str = field(
         default_factory=lambda: _get_env_var(
             "DENSE_EMBEDDING_MODEL", default_value="jinaai/jina-embeddings-v2-base-en"
@@ -56,28 +66,42 @@ class Config:
             8. Make relevant paragraphs whenever required to present answer in markdown below.
             9. MUST PROVIDE the Source Link above the Answer as Source: source_link.
             10. Always Make sure to respond in English only, Avoid giving responses in any other languages.""",
-            required=False
+            required=False,
         )
     )
 
     MODEL_SPECIFIC_PROMPT_SYSTEM_TAG: str = field(
-        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_SYSTEM_TAG", default_value="", required=False),
+        default_factory=lambda: _get_env_var(
+            "MODEL_SPECIFIC_PROMPT_SYSTEM_TAG", default_value="", required=False
+        ),
     )
     MODEL_SPECIFIC_PROMPT_USER_TAG: str = field(
-        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_USER_TAG", default_value="", required=False)
+        default_factory=lambda: _get_env_var(
+            "MODEL_SPECIFIC_PROMPT_USER_TAG", default_value="", required=False
+        )
     )
     MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG: str = field(
-        default_factory=lambda: _get_env_var("MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG", default_value="", required=False)
+        default_factory=lambda: _get_env_var(
+            "MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG", default_value="", required=False
+        )
     )
 
     MLFLOW_TRACKING_URI: str = field(
-        default_factory=lambda: _get_env_var("MLFLOW_TRACKING_URI", default_value="", required=False)
+        default_factory=lambda: _get_env_var(
+            "MLFLOW_TRACKING_URI", default_value="", required=False
+        )
     )
 
-    MLFLOW_EXPERIMENT_NAME:str = field(
-        default_factory=lambda: _get_env_var("MLFLOW_EXPERIMENT_NAME", default_value="hybrid_rag_exp", required=False)
+    MLFLOW_EXPERIMENT_NAME: str = field(
+        default_factory=lambda: _get_env_var(
+            "MLFLOW_EXPERIMENT_NAME", default_value="hybrid_rag_exp", required=False
+        )
     )
-
+    MLFLOW_RUN_NAME: str = field(
+        default_factory=lambda: _get_env_var(
+            "MLFLOW_RUN_NAME", default_value="rag_chatbot_sam", required=False
+        )
+    )
     QUESTION_MODERATION_PROMPT: str = field(
         default_factory=lambda: _get_env_var(
             "QUESTION_MODERATION_PROMPT",
@@ -105,7 +129,7 @@ class Config:
 
     Question6: Suggest me some mental health tips.
     Response6: IRRELEVANT-QUESTION""",
-    required=False
+            required=False,
         )
     )
 

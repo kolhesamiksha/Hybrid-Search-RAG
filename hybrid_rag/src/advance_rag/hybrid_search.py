@@ -3,18 +3,20 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import List
-from typing import Dict
 
-from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
-from hybrid_rag.src.utils.logutils import Logger
-from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
 from langchain_core.documents import Document
 from pymilvus import AnnSearchRequest
 from pymilvus import RRFRanker
 from pymilvus import SearchResult
+
+from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
+from hybrid_rag.src.utils.logutils import Logger
+from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
+
 
 class MilvusHybridSearch:
     def __init__(
@@ -63,7 +65,7 @@ class MilvusHybridSearch:
         return self._sparse_search_params
 
     @sparse_search_params.setter
-    def sparse_search_params(self, value:dict) -> dict:
+    def sparse_search_params(self, value: dict) -> dict:
         if not isinstance(value, dict):
             raise ValueError("Sparse search parameters must be a dictionary")
         self._sparse_search_params = value
@@ -73,12 +75,12 @@ class MilvusHybridSearch:
         return self._dense_search_params
 
     @dense_search_params.setter
-    def dense_search_params(self, value:dict) -> dict:
+    def dense_search_params(self, value: dict) -> dict:
         if not isinstance(value, dict):
             raise ValueError("Dense search parameters must be a dictionary")
         self._dense_search_params = value
 
-    def generate_embeddings(self, question: str) -> Tuple[object,object]:
+    def generate_embeddings(self, question: str) -> Tuple[object, object]:
         """
         Generate sparse and dense embeddings for the given question.
 
@@ -91,7 +93,9 @@ class MilvusHybridSearch:
         dense_question_emb = denseEmbedModel.dense_embedding_model(question)
         return sparse_question_emb, dense_question_emb
 
-    def perform_search(self, sparse_question_emb:object, dense_question_emb:object, search_limit:int) -> List[List[SearchResult]]:
+    def perform_search(
+        self, sparse_question_emb: object, dense_question_emb: object, search_limit: int
+    ) -> List[List[SearchResult]]:
         """
         Perform hybrid search on the Milvus collection using sparse and dense embeddings.
 
@@ -123,7 +127,7 @@ class MilvusHybridSearch:
 
         return res
 
-    def process_results(self, res:List[List[SearchResult]]) -> List[Document]:
+    def process_results(self, res: List[List[SearchResult]]) -> List[Document]:
         """
         Process the search results and create a list of Document objects.
 

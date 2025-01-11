@@ -1,9 +1,10 @@
 from typing import Optional
 
-from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
-from hybrid_rag.src.utils.logutils import Logger
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+
+from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
+from hybrid_rag.src.utils.logutils import Logger
 
 
 class QuestionModerator:

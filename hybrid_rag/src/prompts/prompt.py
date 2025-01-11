@@ -3,12 +3,13 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import logging
 import traceback
 from typing import Optional
-import logging
+
+from langchain_core.prompts.prompt import PromptTemplate
 
 from hybrid_rag.src.utils.logutils import Logger
-from langchain_core.prompts.prompt import PromptTemplate
 
 
 class SupportPromptGenerator:

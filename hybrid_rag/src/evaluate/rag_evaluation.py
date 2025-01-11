@@ -3,29 +3,29 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import asyncio
+import logging
 import traceback
 from typing import List
 from typing import Optional
 from typing import Tuple
-import logging
-import asyncio
-from langchain_openai import ChatOpenAI
 
 from datasets import Dataset
 from datasets import Sequence
-from hybrid_rag.src.utils.logutils import Logger
-from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
-
 from ragas import evaluate
-from ragas.llms import LangchainLLMWrapper
 from ragas import SingleTurnSample
+from ragas.llms import LangchainLLMWrapper
+from ragas.metrics import answer_relevancy
+from ragas.metrics import faithfulness
 from ragas.metrics import LLMContextPrecisionWithoutReference
-from ragas.metrics import faithfulness, answer_relevancy
 from ragas.metrics import LLMContextRecall
 from ragas.metrics import ResponseRelevancy
+
+from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
+from hybrid_rag.src.utils.logutils import Logger
 
 # from ragas.metrics.critique import harmfulness, correctness
 
@@ -89,22 +89,26 @@ class RAGAEvaluator:
             )
             return "FAIL"
 
-    async def context_precision_without_reference(self, input:str, answer:str, context:List[str]):
+    async def context_precision_without_reference(
+        self, input: str, answer: str, context: List[str]
+    ):
         sample = SingleTurnSample(
             user_input=input,
             response=answer,
-            retrieved_contexts=context, 
+            retrieved_contexts=context,
         )
 
-        context_precision = LLMContextPrecisionWithoutReference(llm=self.langchainLLMWrapper)
+        context_precision = LLMContextPrecisionWithoutReference(
+            llm=self.langchainLLMWrapper
+        )
         scorer = await context_precision.single_turn_ascore(sample)
         return scorer
 
-    async def answer_relevancy(self, input:str, answer:str, context:List[str]):
+    async def answer_relevancy(self, input: str, answer: str, context: List[str]):
         sample = SingleTurnSample(
             user_input=input,
             response=answer,
-            retrieved_contexts=context, 
+            retrieved_contexts=context,
         )
 
         answer_relevancy = ResponseRelevancy(llm=self.langchainLLMWrapper)
@@ -146,8 +150,14 @@ class RAGAEvaluator:
             )
 
             try:
-                context_precision = asyncio.run(self.context_precision_without_reference(question[0], answer[0], contexts[0]))
-                self.logger.info(f"Successfully Caluclated the Context Precision Metrics SCORE: {context_precision}")
+                context_precision = asyncio.run(
+                    self.context_precision_without_reference(
+                        question[0], answer[0], contexts[0]
+                    )
+                )
+                self.logger.info(
+                    f"Successfully Caluclated the Context Precision Metrics SCORE: {context_precision}"
+                )
             except Exception as e:
                 error = str(e)
                 self.logger.error("Failed to Calculate Context precision Metrics")
@@ -160,16 +170,19 @@ class RAGAEvaluator:
             #     error = str(e)
             #     self.logger.error("Failed to Calculate Answer Relevancy Metrics")
             #     raise
-            
+
             # Perform evaluation
             result = evaluate(
                 rag_dataset,
-                metrics=[faithfulness,answer_relevancy],  # context_utilization, harmfulness, correctness
+                metrics=[
+                    faithfulness,
+                    answer_relevancy,
+                ],  # context_utilization, harmfulness, correctness
                 llm=self.langchainLLMWrapper,
                 embeddings=evaluation_embeddings,
             )
             self.logger.info(f"type of result: {result}")
-            #result['context_precision'] = context_precision
+            # result['context_precision'] = context_precision
             # result['answer_relevancy'] = answer_relevancy
             self.logger.info(
                 "Successfully evaluated the questions, answers, and context."

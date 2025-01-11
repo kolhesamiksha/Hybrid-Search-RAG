@@ -6,9 +6,10 @@ Version: 0.1.0
 import traceback
 from typing import List
 
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+
 from hybrid_rag.src.utils.custom_utils import SparseFastEmbedEmbeddings
 from hybrid_rag.src.utils.logutils import Logger
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 # TODO:add Logger & exceptions
 logger = Logger().get_logger()

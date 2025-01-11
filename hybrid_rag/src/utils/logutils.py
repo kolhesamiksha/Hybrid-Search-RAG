@@ -7,6 +7,8 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+from pydantic import BaseModel
+
 
 class Logger:
     def __init__(self, file_name: str | None = None, log_dir: str = "logs") -> None:

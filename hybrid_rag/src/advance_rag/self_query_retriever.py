@@ -3,15 +3,16 @@ Module Name: hybrid_search.py
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
+import logging
 import traceback
 from typing import Optional
-import logging
+
+from langchain.chains.query_constructor.base import AttributeInfo
+from langchain.retrievers.self_query.base import SelfQueryRetriever
 
 from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.utils.logutils import Logger
 from hybrid_rag.src.vectordb.zillinz_milvus import VectorStoreManager
-from langchain.chains.query_constructor.base import AttributeInfo
-from langchain.retrievers.self_query.base import SelfQueryRetriever
 
 
 class SelfQueryRetrieval:
