@@ -1,81 +1,81 @@
-# Workflow YAML file
-name: Build Test and Deploy Hybrid RAG
+# # Workflow YAML file
+# name: Build Test and Deploy Hybrid RAG
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - chat_restapi/**
-      - chat_streamlit_app/**
-      - hybrid_rag/**
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - chat_restapi/**
+#       - chat_streamlit_app/**
+#       - hybrid_rag/**
 
-jobs:
-  build-and-test-and-deploy:
-    name: Build, Test, and Push Docker Image
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-test-and-deploy:
+#     name: Build, Test, and Push Docker Image
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+#     steps:
+#     - name: Checkout Code
+#       uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+#     - name: Set up Python
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: '3.11'
 
-    - name: Cache Poetry dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-poetry-
+#     - name: Cache Poetry dependencies
+#       uses: actions/cache@v3
+#       with:
+#         path: ~/.cache/pip
+#         key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+#         restore-keys: |
+#           ${{ runner.os }}-poetry-
 
-    - name: Install Poetry
-      run: pip install poetry
+#     - name: Install Poetry
+#       run: pip install poetry
 
-    - name: Install Dependencies
-      run: poetry install --with lint,dev,typing,codespell
+#     - name: Install Dependencies
+#       run: poetry install --with lint,dev,typing,codespell
 
-    # - name: Install Pre-commit and Hooks
-    #   run: make install-precommit  # Install pre-commit package and hooks
+#     # - name: Install Pre-commit and Hooks
+#     #   run: make install-precommit  # Install pre-commit package and hooks
 
-    # - name: Run Pre-commit Hooks
-    #   run: make run-precommit  # Run all pre-commit hooks
+#     # - name: Run Pre-commit Hooks
+#     #   run: make run-precommit  # Run all pre-commit hooks
 
-    # - name: Run Tests
-    #   run: make test
+#     # - name: Run Tests
+#     #   run: make test
 
-    - name: Build Docker Image
-      run: docker build -t samiksha_hybrid_rag .
+#     - name: Build Docker Image
+#       run: docker build -t samiksha_hybrid_rag .
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+#     - name: Configure AWS Credentials
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Verify Docker Login
-      run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 933780768159.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+#     - name: Verify Docker Login
+#       run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 933780768159.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-    - name: Tag Docker Image
-      run: |
-        IMAGE_URI=${{ secrets.ECR_REGISTRY }}
-        docker tag samiksha_hybrid_rag:latest $IMAGE_URI
+#     - name: Tag Docker Image
+#       run: |
+#         IMAGE_URI=${{ secrets.ECR_REGISTRY }}
+#         docker tag samiksha_hybrid_rag:latest $IMAGE_URI
 
-    - name: Push Docker Image
-      run: |
-        IMAGE_URI=${{ secrets.ECR_REGISTRY }}
-        docker push $IMAGE_URI
+#     - name: Push Docker Image
+#       run: |
+#         IMAGE_URI=${{ secrets.ECR_REGISTRY }}
+#         docker push $IMAGE_URI
 
-    - name: Deploy to ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-      with:
-        task-definition: task-definition.json
-        service: ${{ secrets.ECS_SERVICE_NAME }}
-        cluster: ${{ secrets.ECS_CLUSTER_NAME }}
-        wait-for-service-stability: true
-      env:
-        AWS_REGION: ${{ secrets.AWS_REGION }}
+#     - name: Deploy to ECS
+#       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+#       with:
+#         task-definition: task-definition.json
+#         service: ${{ secrets.ECS_SERVICE_NAME }}
+#         cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+#         wait-for-service-stability: true
+#       env:
+#         AWS_REGION: ${{ secrets.AWS_REGION }}
