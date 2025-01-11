@@ -19,7 +19,8 @@ streamlit-chat = "^0.1.1"
 streamlit-elements = "^0.1.0"
 langchain-community = "^0.2.13"
 langchain = "^0.2.12"
-fastembed = "^0.3.2"
+fastembed = "0.3.2"
+onnxruntime = "1.17.0"
 langchain-core = "^0.2.43"
 langchain-openai = "^0.1.25"
 langchain-groq = "^0.1.10"
@@ -38,6 +39,9 @@ lark = "^1.2.2"
 ipython = "^8.31.0"
 pymongo = { version = "^3.11", extras = ["srv"] }
 python-dotenv = "^1.0.1"
+mlflow = "^2.19.0"
+boto3 = "^1.35.96"
+psutil = "^6.1.1"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.5.0"
@@ -52,6 +56,10 @@ types-pytz = "^2023.3.0.0"
 types-chardet = "^5.0.4.6"
 types-redis = "^4.3.21.6"
 mypy-protobuf = "^3.0.0"
+
+[tool.towncrier]
+package = "hybrid-rag"
+filename = "CHANGELOG.md"
 
 [tool.coverage.run]
 omit = [
