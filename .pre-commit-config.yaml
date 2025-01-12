@@ -27,7 +27,7 @@ repos:
     - id: ruff
       args:
         - --fix
-        - --extend-include=*.ipynb
+        - --extend-ignore=*.ipynb,
         - --select=I,T201
     - id: ruff-format
 
@@ -77,7 +77,7 @@ repos:
     -   id: codespell
         args:
         - --skip
-        - '.git,*.pdf,*.svg,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig,*.csv,.dockerignore,.gitattributes,.gitignore,Dockerfile,Makefile,*.lock,*.toml,*.md,*.conf,Chatbot-streamlit'
+        - '.git,*.pdf,*.svg,*.yaml,*.ipynb,poetry.lock,*.min.js,*.css,package-lock.json,example_data,_dist,examples,templates,*.trig,*.csv,.dockerignore,.gitattributes,.gitignore,Dockerfile,Makefile,*.lock,*.toml,*.md,*.conf,tests, Chatbot-streamlit'
         - --ignore-regex
         - '.*(Stati Uniti|Tense=Pres).*'
         - --ignore-words-list

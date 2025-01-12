@@ -10,15 +10,16 @@ from slowapi.errors import RateLimitExceeded
 app = FastAPI(title="API", version="0.0.1", description="API")
 
 app.add_middleware(
-        CORSMiddleware,
-        allow_origins=['*'],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(rag_router)
-app.state.limiter=limiter
+app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
 async def swagger_ui_redirect():
