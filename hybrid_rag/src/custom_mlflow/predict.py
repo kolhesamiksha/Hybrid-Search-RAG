@@ -23,6 +23,10 @@ class RAGChatbotModel(mlflow.pyfunc.PythonModel):
         self.chatbot_instance = RAGChatbot(config, logger)
 
     def predict(self, context, model_input):
+        if not isinstance(model_input, pd.DataFrame) or 'question' not in model_input.columns or 'history' not in model_input.columns:
+            raise ValueError("Invalid input format. Expected a DataFrame with 'question' and 'history' columns.")
+        if model_input.empty:
+            raise ValueError("Received empty input DataFrame.")
         question = str(model_input['question'].iloc[0])
         history_str = str(model_input['history'].iloc[0])
         print(question)

@@ -18,8 +18,8 @@ from hybrid_rag.src.utils.logutils import Logger
 class VectorStoreManager:
     def __init__(
         self,
-        zilliz_cloud_uri: str,
-        zilliz_cloud_api_key: str,
+        zillinz_cloud_uri: str,
+        zillinz_cloud_api_key: str,
         logger: Optional[logging.Logger] = None,
     ) -> None:
         """
@@ -30,8 +30,8 @@ class VectorStoreManager:
 
         """
         self.logger = logger if logger else Logger().get_logger()
-        self.zilliz_cloud_uri = zilliz_cloud_uri
-        self.__zilliz_cloud_api_key = zilliz_cloud_api_key
+        self.zillinz_cloud_uri = zillinz_cloud_uri
+        self.__zillinz_cloud_api_key = zillinz_cloud_api_key
 
     def _connect(self) -> None:
         """
@@ -40,7 +40,7 @@ class VectorStoreManager:
         This method ensures that the required connection is established before interacting with Milvus.
         """
         connections.connect(
-            uri=self.zilliz_cloud_uri, token=self.__zilliz_cloud_api_key
+            uri=self.zillinz_cloud_uri, token=self.__zillinz_cloud_api_key
         )
 
     def load_collection(self, collection_name: str) -> Collection:
@@ -100,8 +100,8 @@ class VectorStoreManager:
             vector_store = Milvus(
                 embeddings,
                 connection_args={
-                    "uri": self.zilliz_cloud_uri,
-                    "token": self.__zilliz_cloud_api_key,
+                    "uri": self.zillinz_cloud_uri,
+                    "token": self.__zillinz_cloud_api_key,
                     "secure": True,
                 },
                 collection_name=collection_name,

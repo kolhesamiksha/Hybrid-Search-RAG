@@ -2,6 +2,9 @@ import os
 import json
 import shutil
 import mlflow
+import logging
+import traceback
+from typing import Optional
 import pandas as pd
 import mlflow.pyfunc
 import subprocess
@@ -12,24 +15,27 @@ from hybrid_rag.src.utils import Logger
 from dotenv import load_dotenv
 #from hybrid_rag.src.rag import RAGChatbot
 from hybrid_rag.src.custom_mlflow import RAGChatbotModel
+from hybrid_rag.src.utils.logutils import Logger
 
 class CustomMlflowLogging:
-    def __init__(self, config:Config):
+    def __init__(self, config:Config, logger: Optional[logging.Logger] = None):
         # dotenv_path = './.env.example'
         # load_dotenv(dotenv_path=dotenv_path)
         # self.config = Config()
         # self.logger = Logger()
-        self._setup_mlflow()
-        os.environ['MLFLOW_TRACKING_URI'] = "http://localhost:5000"
-        os.environ["MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING"] = "true"
         self.config = config
+        self.logger = logger if logger else Logger().get_logger()
+        self._setup_mlflow()
+        os.environ['MLFLOW_TRACKING_URI'] = self.config.MLFLOW_TRACKING_URI
+        os.environ["MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING"] = "true"
+       
         self.mlflow_tracking_uri = self.config.MLFLOW_TRACKING_URI
         self.mlflow_experiment = self.config.MLFLOW_EXPERIMENT_NAME
         self.mlflow_run_name = self.config.MLFLOW_RUN_NAME
         mlflow.set_tracking_uri(self.mlflow_tracking_uri)
         mlflow.set_experiment(self.mlflow_experiment)
         mlflow.langchain.autolog(log_traces=True)
-        
+        self.logger.info("Started MLFLOW Tracing..")
         self.requirements = [
             'python==3.11.5'
             'cloudpickle==3.1.0',
@@ -81,23 +87,18 @@ class CustomMlflowLogging:
 
         try:
             # Start the MLflow server
-            print("Starting MLflow server...")
+            self.logger.info("Starting MLflow server...")
             subprocess.Popen(mlflow_command)
-            print("MLflow server started on http://localhost:5000")
+            self.logger.info("MLflow server started on http://localhost:5000")
         except Exception as e:
-            print(f"Failed to start MLflow server: {e}")
+            self.logger.error(f"Failed to start MLflow server: {str(e)} TRACEBACK: {traceback.format_exc()}")
 
-    def log_model(self, question, history):
+    def log_model(self, question:str, history:list):
         """
         This method logs the RAGChatbot model with associated input/output schema,
         environment file, and Python dependencies.
         """
-        # question_lst = [question]
-        # history_lst = [history]
-        # model_input = pd.DataFrame({
-        #     "question": question_lst,
-        #     "history": history_lst
-        # })
+
         question = str(question)
         history = str(history)
         input_schema = Schema([
@@ -110,13 +111,8 @@ class CustomMlflowLogging:
 
         #hist_json_str = json.dumps(hist_json)
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+        self.logger.info("Successfully Generated the model Signature")
         model_input = {"question":question, "history": history}
-        
-        # Log input/output example
-        # input_example = pd.DataFrame([{
-        #     "question": question,
-        #     "history": history
-        # }])
         
         dotenv_path = "./.env.example"
         artifact_dir = "model_artifacts"
@@ -134,11 +130,16 @@ class CustomMlflowLogging:
             mlflow.log_param("model_type", "RAGChatbot")
             # Initialize the model instance
             rag_model = RAGChatbotModel()
+            self.logger.info("Called the RAGChatbotModel custom mlflow model class")
+            with mlflow.start_run(run_name=self.mlflow_run_name, nested=True) as run:
 
-            with mlflow.start_run(run_name=self.mlflow_run_name, nested=True):
-            # Log the model to MLflow as a PyFunc model
+                self.run_id = run.info.run_id
+                self.logger.info(f"Started MLflow run with ID: {self.run_id}")
+                self.logger.info("Successfully Started the mlflow tracing and logging")
+                
+                # Log the model to MLflow as a PyFunc model
                 mlflow.pyfunc.log_model(
-                    artifact_path="rag_chatbot_model_1",
+                    artifact_path="rag_chatbot_artifacts",
                     python_model=rag_model,
                     signature=signature,
                     input_example=model_input,
@@ -146,8 +147,9 @@ class CustomMlflowLogging:
                     pip_requirements=self.requirements
                 )
 
-            print("Model logged successfully.")
+            self.logger.info("Model logged successfully.")
 
         except Exception as e:
-            print(f"Error during model logging: {e}")
+            self.logger.error(f"Error during model logging: {e}")
             raise
+        return self

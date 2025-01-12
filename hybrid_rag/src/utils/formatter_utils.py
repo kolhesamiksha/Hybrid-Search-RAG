@@ -15,7 +15,7 @@ class DocumentFormatter:
     """
     A class for formatting documents and AIMessage results into structured outputs.
     """
-
+    
     @staticmethod
     def format_document(doc: Document) -> str:
         """
