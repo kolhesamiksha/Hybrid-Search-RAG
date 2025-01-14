@@ -2,7 +2,8 @@
 
 This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.  
 
-![Advance-rag-chatbot](https://github.com/user-attachments/assets/b15b0c51-008d-468e-90af-0f072e4789d8)
+![Advance_RAG_Chatbot](https://github.com/user-attachments/assets/e048d51c-0b9d-4eaa-850b-624f79ead5ed)
+
 
 
 ### Deployed FASTAPI:
