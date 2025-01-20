@@ -58,5 +58,7 @@ async def pred(
     question = payload.query
     history = payload.history
     chatbot_instance = RAGChatbot(config, logger)
-    prediction = asyncio.run(chatbot_instance._advance_rag_chatbot_async(question, history))
+    prediction = asyncio.run(
+        chatbot_instance._advance_rag_chatbot_async(question, history)
+    )
     return prediction[0]
