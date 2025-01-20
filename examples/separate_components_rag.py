@@ -27,8 +27,8 @@ logger = Logger().get_logger()
 
 #LLM Configs
 llm_model_name = "llama-3.1-8b-instant"
-provider_base_url = "https://api.groq.com/openai/v1"
-groq_api_key = "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"
+provider_base_url = ""
+groq_api_key = ""
 temperature = 0.3
 top_p = 0.1
 frequency_penalty = 1.0
@@ -72,9 +72,9 @@ metadata_attributes = [
 document_info = "ey company docs contains audit, tax, ai & supply chain domains"
 
 #VectorDB params
-collection_name = "ey_data_1511"
-zillinz_cloud_uri = "https://in03-c2cc7c5da8decab.api.gcp-us-west1.zillizcloud.com"
-zillinz_cloud_api_key = "1a8a395165813d72085da55dde1db494f31fc95444ebb4f9e1f9e38127406c2ba82eb29f8b8e3d79c4a06618016e67ac77816ad9"
+collection_name = ""
+zillinz_cloud_uri = ""
+zillinz_cloud_api_key = ""
 top_k = 4
 
 #Reranking params
@@ -83,10 +83,10 @@ dense_topk=3
 sparse_topk=3
 
 ##AWS CONFIGS:
-s3_bucket = "hybrid-rag-s3"
-s3_key = "chat_history.csv"
-aws_access_key_id = "AKIAYXOHOUBKCWUQEV75"
-aws_secret_access_key = "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"
+s3_bucket = ""
+s3_key = ""
+aws_access_key_id = ""
+aws_secret_access_key = ""
 
 #Prompt params
 master_prompt = """Please follow below instructions to provide the response:
