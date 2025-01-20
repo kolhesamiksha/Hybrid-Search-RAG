@@ -25,13 +25,17 @@ class VectorStoreManager:
         """
         Initialize the VectorStoreManager with required configuration.
 
-        :param zilliz_cloud_uri: URI for the Zilliz Cloud service.
-        :param zilliz_cloud_api_key: API key for accessing Zilliz Cloud.
+        Args:
+            zilliz_cloud_uri (str): URI for the Zilliz Cloud service.
+            zilliz_cloud_api_key (str): API key for accessing Zilliz Cloud.
 
+        Returns:
+            None: This method initializes the VectorStoreManager instance and doesn't return a value.
         """
         self.logger = logger if logger else Logger().get_logger()
         self.zillinz_cloud_uri = zillinz_cloud_uri
         self.__zillinz_cloud_api_key = zillinz_cloud_api_key
+        self._connect()  # Establish connection once at initialization
 
     def _connect(self) -> None:
         """
@@ -47,12 +51,16 @@ class VectorStoreManager:
         """
         Load a Milvus collection by name.
 
-        :param collection_name: Name of the collection to be loaded.
-        :return: The loaded collection object.
-        :raises Exception: If loading the collection fails.
+        Args:
+            collection_name (str): Name of the collection to be loaded.
+
+        Returns:
+            MilvusCollection: The loaded collection object.
+
+        Raises:
+            Exception: If loading the collection fails.
         """
         try:
-            self._connect()
             milvus_collection = Collection(name=collection_name)
             milvus_collection.load()
             self.logger.info(f"Collection {collection_name} loaded successfully.")
@@ -65,11 +73,13 @@ class VectorStoreManager:
         """
         Drop a Milvus collection by name.
 
-        :param collection_name: Name of the collection to be dropped.
-        :raises Exception: If dropping the collection fails.
+        Args:
+            collection_name (str): Name of the collection to be dropped.
+
+        Raises:
+            Exception: If dropping the collection fails.
         """
         try:
-            self._connect()
             utility.drop_collection(collection_name)
             self.logger.info(f"Collection {collection_name} dropped successfully.")
         except Exception as e:
@@ -86,15 +96,19 @@ class VectorStoreManager:
         """
         Initialize a vector store with the specified parameters.
 
-        :param vector_field: Name of the vector field in the collection schema.
-        :param search_params: Search parameters for the vector store (e.g., search method, distance metric).
-        :param dense_embedding_model: Path or name of the dense embedding model for generating embeddings.
-        :param collection_name: Name of the collection where the vector store will be initialized.
-        :return: An initialized vector store object.
-        :raises Exception: If initialization fails.
+        Args:
+            vector_field (str): Name of the vector field in the collection schema.
+            search_params (dict): Search parameters for the vector store (e.g., search method, distance metric).
+            dense_embedding_model (str): Path or name of the dense embedding model for generating embeddings.
+            collection_name (str): Name of the collection where the vector store will be initialized.
+
+        Returns:
+            vector_store: An initialized vector store object (type depends on the implementation of the vector store).
+
+        Raises:
+            Exception: If initialization fails due to invalid parameters, connectivity issues, or other initialization problems.
         """
         try:
-            self._connect()
             embedding_model = EmbeddingModels(dense_embedding_model)
             embeddings = embedding_model.retrieval_embedding_model()
             vector_store = Milvus(

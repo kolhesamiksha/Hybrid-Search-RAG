@@ -36,7 +36,7 @@ class Logger:
         Configures the logger with basic settings.
         """
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG,
             format="%(asctime)s %(levelname)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             filename=str(self.file_path),

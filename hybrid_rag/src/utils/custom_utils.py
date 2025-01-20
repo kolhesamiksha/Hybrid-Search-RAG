@@ -157,7 +157,7 @@ class CustomMultiQueryRetriever(MultiQueryRetriever):
         super().__init__(**kwargs)
 
     MULTI_QUERY_PROMPT = PromptTemplate(
-        input_variables=["question"],
+        input_variables=["question","no_of_questions_to_generate"],
         template="""You are an AI language model assistant. Your task is to break down question if possible to retrieve
        relevant documents from a vector database. By generating 5 break down questions of user question, your goal is to
        help the user overcome some of the limitations of distance-based similarity search. Provide these multi step questions
@@ -170,7 +170,7 @@ class CustomMultiQueryRetriever(MultiQueryRetriever):
         cls,
         retriever: BaseRetriever,
         llm: Any,
-        prompt: BasePromptTemplate = MULTI_QUERY_PROMPT,
+        prompt: PromptTemplate = MULTI_QUERY_PROMPT,
         include_original: bool = True,
     ) -> "CustomMultiQueryRetriever":
         output_parser = LineListOutputParser()

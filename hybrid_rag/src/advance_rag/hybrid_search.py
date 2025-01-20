@@ -7,6 +7,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+import asyncio
 
 from langchain_core.documents import Document
 from pymilvus import AnnSearchRequest
@@ -32,12 +33,13 @@ class MilvusHybridSearch:
         """
         Initialize the MilvusHybridSearch object with necessary parameters.
 
-        :param collection_name: The name of the Milvus collection.
-        :param sparse_embedding_model: The sparse embedding model.
-        :param dense_embedding_model: The dense embedding model.
-        :param sparse_search_params: The parameters for sparse search.
-        :param dense_search_params: The parameters for dense search.
-        :param vectorDbInstance: VectorStoreManager class instance, class object as parameter
+        Args:
+            collection_name (str): The name of the Milvus collection.
+            sparse_embedding_model (str): The sparse embedding model.
+            dense_embedding_model (str): The dense embedding model.
+            sparse_search_params (dict): The parameters for sparse search.
+            dense_search_params (dict): The parameters for dense search.
+            vectorDbInstance (VectorStoreManager): VectorStoreManager class instance.
         """
         self.logger = logger if logger else Logger().get_logger()
         self.collection_name = collection_name
@@ -49,6 +51,8 @@ class MilvusHybridSearch:
         self.milvus_collection = self.vectorDbInstance.load_collection(
             self.collection_name
         )
+        self.sparseEmbedModel = EmbeddingModels(self.sparse_embedding_model)
+        self.denseEmbedModel = EmbeddingModels(self.dense_embedding_model)
 
     @property
     def collection_name(self) -> str:
@@ -80,35 +84,46 @@ class MilvusHybridSearch:
             raise ValueError("Dense search parameters must be a dictionary")
         self._dense_search_params = value
 
-    def generate_embeddings(self, question: str) -> Tuple[object, object]:
+    async def generate_embeddings(self, question: str) -> Tuple[object, object]:
         """
         Generate sparse and dense embeddings for the given question.
 
-        :param question: The input question to generate embeddings for.
-        :return: A tuple containing sparse and dense embeddings.
+        Args:
+            question (str): The input question to generate embeddings for.
+
+        Returns:
+            Tuple[List[float], List[float]]: A tuple containing sparse and dense embeddings as lists of floats.
         """
-        sparseEmbedModel = EmbeddingModels(self.sparse_embedding_model)
-        denseEmbedModel = EmbeddingModels(self.dense_embedding_model)
-        sparse_question_emb = sparseEmbedModel.sparse_embedding_model(question)
-        dense_question_emb = denseEmbedModel.dense_embedding_model(question)
+        
+        sparse_task = self.sparseEmbedModel.sparse_embedding_model(question)
+        dense_task = self.denseEmbedModel.dense_embedding_model(question)
+        sparse_question_emb, dense_question_emb = await asyncio.gather(sparse_task, dense_task)
         return sparse_question_emb, dense_question_emb
 
     def perform_search(
-        self, sparse_question_emb: object, dense_question_emb: object, search_limit: int
+        self, 
+        sparse_question_emb: object, 
+        dense_question_emb: object, 
+        search_limit: int, 
+        dense_search_limit: int, 
+        sparse_search_limit:int, 
     ) -> List[List[SearchResult]]:
         """
         Perform hybrid search on the Milvus collection using sparse and dense embeddings.
 
-        :param sparse_question_emb: The sparse question embedding.
-        :param dense_question_emb: The dense question embedding.
-        :return: A list of documents matching the search query.
+        Args:
+            sparse_question_emb (List[float]): The sparse question embedding.
+            dense_question_emb (List[float]): The dense question embedding.
+
+        Returns:
+            List[Document]: A list of documents matching the search query.
         """
         # Create AnnSearchRequest for sparse and dense queries
         sparse_q = AnnSearchRequest(
-            sparse_question_emb, "sparse_vector", self.sparse_search_params, limit=3
+            sparse_question_emb, "sparse_vector", self.sparse_search_params, limit=sparse_search_limit
         )
         dense_q = AnnSearchRequest(
-            dense_question_emb, "dense_vector", self.dense_search_params, limit=3
+            dense_question_emb, "dense_vector", self.dense_search_params, limit=dense_search_limit
         )
 
         # Perform hybrid search
@@ -131,8 +146,11 @@ class MilvusHybridSearch:
         """
         Process the search results and create a list of Document objects.
 
-        :param res: The search results from Milvus.
-        :return: A list of Document objects containing page content and metadata.
+        Args:
+            res (Any): The search results from Milvus, could be a list, dictionary, or another format depending on the Milvus client.
+
+        Returns:
+            List[Document]: A list of Document objects containing page content and metadata.
         """
         output = []
         for _, hits in enumerate(res):
@@ -148,19 +166,54 @@ class MilvusHybridSearch:
                 output.append(doc_chunk)
         return output
 
-    def hybrid_search(self, question: str, search_limit: int) -> List[Document]:
+    async def hybrid_search_async(self, 
+            question: str, 
+            search_limit: int, 
+            dense_search_limit: int, 
+            sparse_search_limit:int, 
+        ) -> List[Document]:
         """
         Perform hybrid search by generating embeddings, performing search, and processing results.
 
-        :param question: The input question to perform the search for.
-        :return: A list of Document objects containing the search results.
+        Args:
+            question (str): The input question to perform the search for.
+
+        Returns:
+            List[Document]: A list of Document objects containing the search results.
         """
         # Generate sparse and dense embeddings
-        sparse_question_emb, dense_question_emb = self.generate_embeddings(question)
+        sparse_question_emb, dense_question_emb = await self.generate_embeddings(question)
 
         # Perform hybrid search
-        res = self.perform_search(sparse_question_emb, dense_question_emb, search_limit)
+        res = self.perform_search(sparse_question_emb, dense_question_emb, search_limit, dense_search_limit, sparse_search_limit)
 
         # Process and return results
         output = self.process_results(res)
         return output
+    
+    def hybrid_search(self, question: str, search_limit: int, dense_search_limit: int, sparse_search_limit:int,) -> List[Document]:
+        """
+        Synchronously Perform hybrid search by generating embeddings, performing search, and processing results.
+        
+        Args:
+            question (str): The input question to perform the search for.
+
+        Returns:
+            List[Document]: A list of Document objects containing the search results.
+        """
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If already running an event loop, use run_coroutine_threadsafe
+                self.logger.info("Running in an existing event loop.")
+                future = asyncio.run_coroutine_threadsafe(
+                    self.hybrid_search_async(question, search_limit, dense_search_limit, sparse_search_limit), loop
+                )
+                return future.result()
+            else:
+                # If no event loop is running, create a new one
+                self.logger.info("Starting a new event loop.")
+                return asyncio.run(self.hybrid_search_async(question, search_limit, dense_search_limit, sparse_search_limit))
+        except Exception as e:
+            self.logger.error(f"Error in async hybrid_search: {e}")
+            raise

@@ -27,10 +27,20 @@ from ragas.metrics import ResponseRelevancy
 from hybrid_rag.src.models.llm_model.model import LLMModelInitializer
 from hybrid_rag.src.utils.logutils import Logger
 
+from functools import lru_cache
+import cachetools
 # from ragas.metrics.critique import harmfulness, correctness
 
 
 class RAGAEvaluator:
+    """
+    A class for evaluating Retrieval-Augmented Generation (RAG) models using metrics from the RAGAS framework.
+
+    Attributes:
+        dense_embedding_model (str): Name of the dense embedding model.
+        llmModelInstance (LLMModelInitializer): An initialized LLM model instance.
+        logger (logging.Logger): Logger instance for logging information and errors.
+    """
     def __init__(
         self,
         dense_embedding_model: str,
@@ -38,22 +48,47 @@ class RAGAEvaluator:
         logger: Optional[logging.Logger] = None,
     ):
         """
-        Initialize the RAG Evaluator class with required configuration
+        Initialize the RAG Evaluator class with required configurations.
 
-        :param llm_model_name: LLM model name
-        :param openai_api_base: RAGAS support ChatOpenAI API compatibility , provide openai_api_base e.g https://api.openai.com/v1
-        :param groq_api_key: groq api key for ChatOpenAI
-        :param dense_embedding_model: dense embedding model param for embeddings
+        Args:
+            dense_embedding_model (str): Name of the dense embedding model.
+            llmModelInstance (LLMModelInitializer): An instance of LLMModelInitializer.
+            logger (Optional[logging.Logger]): Logger instance for logging. Defaults to None.
         """
 
         self.logger = logger if logger else Logger().get_logger()
         self.llmModelInstance = llmModelInstance
-        self.llmModel_initializer = self.llmModelInstance.initialise_llm_model()
-        self.langchainLLMWrapper = LangchainLLMWrapper(self.llmModel_initializer)
+        self.llmModel_initializer = llmModelInstance.initialise_llm_model()
+        self.langchainLLMWrapper = self._get_llm_model()
         self.dense_embedding_model = dense_embedding_model
+        self.batch_size = 2
 
+    @lru_cache(maxsize=2)  # Cache the embedding model
+    def _get_embedding_model(self) -> FastEmbedEmbeddings:
+        """
+        Load and cache the dense embedding model.
+
+        Returns:
+            FastEmbedEmbeddings: The initialized embedding model.
+        """
+        self.logger.info(f"Loading dense embedding model: {self.dense_embedding_model}")
+        return FastEmbedEmbeddings(model_name=self.dense_embedding_model)
+    
+    @lru_cache(maxsize=1)
+    def _get_llm_model(self) -> LangchainLLMWrapper:
+        self.logger.info("Loading LLM model...")
+        return LangchainLLMWrapper(self.llmModel_initializer)
+    
     def _validate_column_dtypes(self, ds: Dataset) -> str:
-        """Validate the dataset's column types against expected RAGAS framework."""
+        """
+        Validate dataset column types for compatibility with the RAGAS framework.
+
+        Args:
+            ds (Dataset): The dataset to validate.
+
+        Returns:
+            str: 'PASS' if validation succeeds, 'FAIL' otherwise.
+        """
         try:
             # Validate string columns
             for column_name in ["question", "answer", "ground_truth"]:
@@ -92,6 +127,17 @@ class RAGAEvaluator:
     async def context_precision_without_reference(
         self, input: str, answer: str, context: List[str]
     ):
+        """
+        Calculate context precision without reference.
+
+        Args:
+            input (str): User input.
+            answer (str): LLM response.
+            context (List[str]): Retrieved contexts.
+
+        Returns:
+            float: Context precision score.
+        """
         sample = SingleTurnSample(
             user_input=input,
             response=answer,
@@ -105,6 +151,17 @@ class RAGAEvaluator:
         return scorer
 
     async def answer_relevancy(self, input: str, answer: str, context: List[str]):
+        """
+        Calculate answer relevancy.
+
+        Args:
+            input (str): User input.
+            answer (str): LLM response.
+            context (List[str]): Retrieved contexts.
+
+        Returns:
+            float: Answer relevancy score.
+        """ 
         sample = SingleTurnSample(
             user_input=input,
             response=answer,
@@ -116,21 +173,33 @@ class RAGAEvaluator:
         return scorer
 
     def _prepare_context_for_ragas(self, documents: List[Document]) -> List[List[str]]:
+        """
+        Prepare document contexts for RAGAS evaluation.
+
+        Args:
+            documents (List[Document]): List of documents.
+
+        Returns:
+            List[List[str]]: Nested list of document contents.
+        """
         result = []
         for doc in documents:
             result.append(doc.page_content)
         return [result]
 
-    def evaluate_rag(
+    async def evaluate_rag_async(
         self, question: List[str], answer: List[str], context: List[Document]
     ) -> Tuple[dict, float]:
         """
-        Evaluate the RAG model with given questions, answers, and context
+        Evaluate RAG performance asynchronously.
 
-        :param question: Question as List[str]
-        :param answer: answer as List[str]
-        :param context: context as List[List[str]]
-        :return Dictionary with matrices and their values
+        Args:
+            question (List[str]): Questions.
+            answer (List[str]): Answers.
+            context (List[Document]): Retrieved contexts.
+
+        Returns:
+            Tuple[dict, float]: Evaluation results and context precision score.
         """
         try:
             # Create dataset
@@ -145,32 +214,7 @@ class RAGAEvaluator:
 
             self.logger.info("Successfully validated the dataset for RAG evaluation.")
 
-            evaluation_embeddings = FastEmbedEmbeddings(
-                model_name=self.dense_embedding_model
-            )
-
-            try:
-                context_precision = asyncio.run(
-                    self.context_precision_without_reference(
-                        question[0], answer[0], contexts[0]
-                    )
-                )
-                self.logger.info(
-                    f"Successfully Caluclated the Context Precision Metrics SCORE: {context_precision}"
-                )
-            except Exception as e:
-                error = str(e)
-                self.logger.error("Failed to Calculate Context precision Metrics")
-                raise
-
-            # try:
-            #     answer_relevancy = asyncio.run(self.answer_relevancy(question[0], answer[0], contexts[0]))
-            #     self.logger.info(f"Successfully Caluclated the Answer Relevancy Metrics SCORE: {answer_relevancy}")
-            # except Exception as e:
-            #     error = str(e)
-            #     self.logger.error("Failed to Calculate Answer Relevancy Metrics")
-            #     raise
-
+            evaluation_embeddings = self._get_embedding_model()
             # Perform evaluation
             result = evaluate(
                 rag_dataset,
@@ -180,6 +224,7 @@ class RAGAEvaluator:
                 ],  # context_utilization, harmfulness, correctness
                 llm=self.langchainLLMWrapper,
                 embeddings=evaluation_embeddings,
+                batch_size=self.batch_size,
             )
             self.logger.info(f"type of result: {result}")
             # result['context_precision'] = context_precision
@@ -187,11 +232,41 @@ class RAGAEvaluator:
             self.logger.info(
                 "Successfully evaluated the questions, answers, and context."
             )
+            context_precision=0.0
             return (result, context_precision)
 
         except Exception as e:
             error = str(e)
             self.logger.error(
-                f"Failed to evaluate RAG: {error} -> TRACEBACK: {traceback.format_exc()}"
+                f"ERROR : TRACEBACK: {traceback.format_exc()}"
             )
+            raise
+    
+    def evaluate_rag(self, question: List[str], answer: List[str], context: List[Document]) -> Tuple[dict, float]:
+        """
+        Synchronous Evaluate RAG performance.
+
+        Args:
+            question (List[str]): Questions.
+            answer (List[str]): Answers.
+            context (List[Document]): Retrieved contexts.
+
+        Returns:
+            Tuple[dict, float]: Evaluation results and context precision score.
+        """
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If already running an event loop, use run_coroutine_threadsafe
+                self.logger.info("Running in an existing event loop.")
+                future = asyncio.run_coroutine_threadsafe(
+                    self.evaluate_rag_async(question, answer, context), loop
+                )
+                return future.result()
+            else:
+                # If no event loop is running, create a new one
+                self.logger.info("Starting a new event loop.")
+                return asyncio.run(self.evaluate_rag_async(question, answer, context))
+        except Exception as e:
+            self.logger.error(f"Error in async_rag: {e}")
             raise

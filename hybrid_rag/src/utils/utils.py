@@ -104,9 +104,10 @@ def save_history_to_s3(
             answer_relevancy = "NULL"
             context_precision = "NULL"
         else:
-            faithfullness = response[3][0]["faithfullness"]
-            answer_relevancy = response[3][0]["answer-relevancy"]
+            faithfullness = response[3][0]["faithfulness"]
+            answer_relevancy = response[3][0]["answer_relevancy"]
             context_precision = response[3][1]
+        
         # Prepare new data to append
         new_data = pd.DataFrame(
             {

@@ -15,6 +15,22 @@ from hybrid_rag.src.utils.logutils import Logger
 class SupportPromptGenerator:
     """
     A class to generate a structured support prompt for QA systems.
+
+    Attributes:
+        logger (logging.Logger): Logger instance for logging information or errors.
+        LLAMA3_SYSTEM_TAG (str): The system tag for the Llama model.
+        LLAMA3_USER_TAG (str): The user tag for the Llama model.
+        LLAMA3_ASSISTANT_TAG (str): The assistant tag for the Llama model.
+        MASTER_PROMPT (str): The master prompt that provides the base for the prompt template.
+
+    Methods:
+        __init__(llm_model_name: str, master_prompt: str, llama3_user_tag: str, llama3_system_tag: str, llama3_assistant_tag: str, logger: Optional[logging.Logger] = None):
+            Initializes the SupportPromptGenerator with necessary system tags and master prompt.
+        
+        generate_prompt() -> PromptTemplate:
+            Generates the QA prompt template using the initialized values.
+            Returns:
+                PromptTemplate: The generated QA prompt template.
     """
 
     def __init__(
@@ -28,6 +44,17 @@ class SupportPromptGenerator:
     ):
         """
         Initializes the SupportPromptGenerator with necessary system tags and master prompt.
+
+        Args:
+            llm_model_name (str): The name of the LLM model to determine tag defaults.
+            master_prompt (str): The master prompt used for the question answering task.
+            llama3_user_tag (str): The user tag for Llama3.
+            llama3_system_tag (str): The system tag for Llama3.
+            llama3_assistant_tag (str): The assistant tag for Llama3.
+            logger (Optional[logging.Logger]): Logger instance for logging. Defaults to None.
+
+        Returns:
+            None: Initializes the instance with the provided arguments.
         """
 
         self.logger = logger if logger else Logger().get_logger()
@@ -57,8 +84,13 @@ class SupportPromptGenerator:
         """
         Generates the QA prompt template using the initialized values.
 
-        :return: A PromptTemplate instance for QA tasks.
+        Args:
+            None: This method uses the instance attributes to create the template.
+
+        Returns:
+            PromptTemplate: The generated QA prompt template that can be used in LLM tasks.
         """
+        
         support_template = f"""
         {self.LLAMA3_SYSTEM_TAG}
         {self.MASTER_PROMPT}

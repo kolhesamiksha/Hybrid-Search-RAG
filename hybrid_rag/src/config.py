@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import Dict
+from typing import List
+from typing import Union
 
 
 @dataclass
@@ -253,6 +255,57 @@ class Config:
             _get_env_var("HYBRID_SEARCH_TOPK", default_value=6, required=False)
         )
     )
+
+    DENSE_SEARCH_LIMIT:int = field(
+        default_factory=lambda: int(
+            _get_env_var("DENSE_SEARCH_LIMIT", default_value=3, required=False)
+        )
+    )
+    SPARSE_SEARCH_LIMIT:int = field(
+        default_factory=lambda: int(
+            _get_env_var("SPARSE_SEARCH_LIMIT", default_value=3, required=False)
+        )
+    )
+    
+    NO_OF_QUESTIONS_TO_GENERATE: int = field(
+        default_factory=lambda: int(
+            _get_env_var("NO_OF_QUESTIONS_TO_GENERATE", default_value=5, required=False)
+        )
+    )
+
+    SELF_RAG_METADATA_ATTRIBUTES: List[Dict[str, str]] = field(
+        default_factory=lambda:[
+            {
+                "METADATA_ATTRIBUTE1_NAME": _get_env_var("METADATA_ATTRIBUTE1_NAME",default_value="",required=False),
+                "METADATA_ATTRIBUTE1_DESCRIPTION": _get_env_var("METADATA_ATTRIBUTE1_DESCRIPTION",default_value="",required=False),
+                "METADATA_ATTRIBUTE1_TYPE": _get_env_var("METADATA_ATTRIBUTE1_TYPE",default_value="",required=False),
+            },
+            {
+                "METADATA_ATTRIBUTE2_NAME": _get_env_var("METADATA_ATTRIBUTE2_NAME",default_value="",required=False),
+                "METADATA_ATTRIBUTE2_DESCRIPTION": _get_env_var("METADATA_ATTRIBUTE2_DESCRIPTION",default_value="",required=False),
+                "METADATA_ATTRIBUTE2_TYPE": _get_env_var("METADATA_ATTRIBUTE2_TYPE",default_value="",required=False),
+            },
+            {
+                "METADATA_ATTRIBUTE3_NAME": _get_env_var("METADATA_ATTRIBUTE3_NAME",default_value="",required=False),
+                "METADATA_ATTRIBUTE3_DESCRIPTION": _get_env_var("METADATA_ATTRIBUTE3_DESCRIPTION",default_value="",required=False),
+                "METADATA_ATTRIBUTE3_TYPE": _get_env_var("METADATA_ATTRIBUTE3_TYPE",default_value="",required=False),
+            },
+            {
+                "METADATA_ATTRIBUTE4_NAME": _get_env_var("METADATA_ATTRIBUTE4_NAME",default_value="",required=False),
+                "METADATA_ATTRIBUTE4_DESCRIPTION": _get_env_var("METADATA_ATTRIBUTE4_DESCRIPTION",default_value="",required=False),
+                "METADATA_ATTRIBUTE4_TYPE": _get_env_var("METADATA_ATTRIBUTE4_TYPE",default_value="",required=False),
+            },
+            {
+                "METADATA_ATTRIBUTE5_NAME": _get_env_var("METADATA_ATTRIBUTE5_NAME",default_value="",required=False),
+                "METADATA_ATTRIBUTE5_DESCRIPTION": _get_env_var("METADATA_ATTRIBUTE5_DESCRIPTION",default_value="",required=False),
+                "METADATA_ATTRIBUTE5_TYPE": _get_env_var("METADATA_ATTRIBUTE5_TYPE",default_value="",required=False),
+            }
+        ])
+    
+    SELF_RAG_DOCUMENTS_BRIEF_SUMMARY: str = field(
+        default_factory=lambda: _get_env_var("SELF_RAG_DOCUMENTS_BRIEF_SUMMARY", default_value="ey company docs contains audit, tax, ai & supply chain domains", required=False), 
+    )
+
     RERANK_TOPK: int = field(
         default_factory=lambda: int(
             _get_env_var("RERANK_TOPK", default_value=3, required=False)

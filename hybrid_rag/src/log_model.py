@@ -19,10 +19,26 @@ from hybrid_rag.src.utils.logutils import Logger
 
 class CustomMlflowLogging:
     def __init__(self, config:Config, logger: Optional[logging.Logger] = None):
-        # dotenv_path = './.env.example'
-        # load_dotenv(dotenv_path=dotenv_path)
-        # self.config = Config()
-        # self.logger = Logger()
+        """
+        RAGChatbotModel is a custom MLflow Python model to interact with a RAG (Retrieval-Augmented Generation) chatbot.
+
+        Methods:
+            load_context(context: MLflowContext) -> None:
+                Loads environment variables and initializes the RAGChatbot instance.
+
+            predict(context: MLflowContext, model_input: pd.DataFrame) -> str:
+                Processes the input DataFrame, extracts question and history, and returns the chatbot's response.
+        
+        Args:
+            context (MLflowContext): The MLflow model context. Used to load environment variables and artifacts.
+            model_input (pd.DataFrame): The input DataFrame containing the columns 'question' and 'history'.
+            
+        Returns:
+            str: The response from the RAG chatbot, typically a string generated from the chatbot's response logic.
+
+        Raises:
+            ValueError: If the input DataFrame is missing required columns ('question' or 'history') or is empty.
+        """
         self.config = config
         self.logger = logger if logger else Logger().get_logger()
         self._setup_mlflow()
@@ -146,10 +162,10 @@ class CustomMlflowLogging:
                     artifacts={"env_file": f"{artifact_dir}/.env.example"},
                     pip_requirements=self.requirements
                 )
-
             self.logger.info("Model logged successfully.")
 
         except Exception as e:
             self.logger.error(f"Error during model logging: {e}")
             raise
+        mlflow.end_run()
         return self

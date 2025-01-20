@@ -6,6 +6,7 @@ import pandas as pd
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.utils import Logger
 from dotenv import load_dotenv
+import asyncio
 
 class RAGChatbotModel(mlflow.pyfunc.PythonModel):
     def __init__(self):
@@ -43,4 +44,17 @@ class RAGChatbotModel(mlflow.pyfunc.PythonModel):
         except Exception as e:
             self.logger.info("Exception in predict method")
         
-        return self.chatbot_instance.advance_rag_chatbot(question, history)
+        response = self.chatbot_instance.advance_rag_chatbot(question, history)
+        if asyncio.iscoroutine(response):
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                # For running in an active event loop
+                return asyncio.run_coroutine_threadsafe(response, loop).result()
+            else:
+                return asyncio.run(response)
+        
+        return response
