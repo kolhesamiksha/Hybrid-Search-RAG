@@ -12,6 +12,7 @@ from hybrid_rag.src.utils import calculate_cost_openai, calculate_cost_groq_llam
 from hybrid_rag.src.utils import Logger
 from hybrid_rag.src.config import Config
 from dotenv import load_dotenv
+import asyncio
 
 import time
 from typing import List, Dict, Optional, Tuple, Any
@@ -25,33 +26,67 @@ from langchain_core.runnables import (
 logger = Logger().get_logger()
 
 #LLM Configs
-llm_model_name = ""
-provider_base_url = ""
-groq_api_key = ""
+llm_model_name = "llama-3.1-8b-instant"
+provider_base_url = "https://api.groq.com/openai/v1"
+groq_api_key = "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"
 temperature = 0.3
 top_p = 0.1
 frequency_penalty = 1.0
 
 #Embedding params
-sparse_embedding_model = ""
-dense_embedding_model = ""
-sparse_search_params = {}
-dense_search_params = {}
+sparse_embedding_model = "Qdrant/bm42-all-minilm-l6-v2-attentions"
+dense_embedding_model = "jinaai/jina-embeddings-v2-base-en"
+dense_search_params = {
+    'index_type':'IVF_SQ8',
+    'metric_type': 'L2',
+    'params': {'nlist': 128}
+}
+sparse_search_params = {
+    'index_type':'SPARSE_INVERTED_INDEX',
+    'metric_type':'IP'
+}
+
+metadata_attributes = [
+    {
+        "name": "source_link",
+        "description": "Defines the source link of the file.",
+        "type": "string"
+    },
+    {
+        "name": "author_name",
+        "description": "The author of the file.",
+        "type": "string"
+    },
+    {
+        "name": "related_topics",
+        "description": "The topics related to the file.",
+        "type": "array"
+    },
+    {
+        "name": "pdf_links",
+        "description": "The PDF links which contain extra information about the file.",
+        "type": "array"
+    },
+]
+
+document_info = "ey company docs contains audit, tax, ai & supply chain domains"
 
 #VectorDB params
-collection_name = ""
-zillinz_cloud_uri = ""
-zillinz_cloud_api_key = ""
+collection_name = "ey_data_1511"
+zillinz_cloud_uri = "https://in03-c2cc7c5da8decab.api.gcp-us-west1.zillizcloud.com"
+zillinz_cloud_api_key = "1a8a395165813d72085da55dde1db494f31fc95444ebb4f9e1f9e38127406c2ba82eb29f8b8e3d79c4a06618016e67ac77816ad9"
 top_k = 4
 
 #Reranking params
 rerank_topk=3
+dense_topk=3
+sparse_topk=3
 
 ##AWS CONFIGS:
-s3_bucket = ""
-s3_key = ""
-aws_access_key_id = ""
-aws_secret_access_key = ""
+s3_bucket = "hybrid-rag-s3"
+s3_key = "chat_history.csv"
+aws_access_key_id = "AKIAYXOHOUBKCWUQEV75"
+aws_secret_access_key = "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"
 
 #Prompt params
 master_prompt = """Please follow below instructions to provide the response:
@@ -140,6 +175,8 @@ self_query_retrieval = SelfQueryRetrieval(
     collection_name=collection_name,
     dense_search_params=dense_search_params,
     dense_embedding_model=dense_embedding_model,
+    metadata_attributes=metadata_attributes,
+    document_info=document_info,
     llmModelInstance=model,
     vectorDbInstance=vectordb,
     logger=logger
@@ -177,35 +214,53 @@ rag_evaluator = RAGAEvaluator(
 )
 
 def generate_chatbot_response(question: str, formatted_context: str, retrieved_history: List[str]) -> Tuple[str, dict]:
-    history = retrieved_history[-5:]  # Limit history to the last 5 entries
     llm_model = model.initialise_llm_model()
     prompt = support_prompt_generator.generate_prompt()
-
-    chain = {
-        "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
-        "LLAMA3_USER_TAG": RunnablePassthrough(),
-        "LLAMA3_SYSTEM_TAG": RunnablePassthrough(),
-        "context": RunnablePassthrough(),
-        "question": RunnablePassthrough(),
-        "chat_history": RunnablePassthrough(),
-        "MASTER_PROMPT": RunnablePassthrough(),
-    } | prompt | llm_model
-
+    chain = (
+        {
+            "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
+            "LLAMA3_USER_TAG": RunnablePassthrough(),
+            "LLAMA3_SYSTEM_TAG": RunnablePassthrough(),
+            "context": RunnablePassthrough(),
+            "question": RunnablePassthrough(),
+            "chat_history": RunnablePassthrough(),
+            "MASTER_PROMPT": RunnablePassthrough(),
+        } 
+        | prompt 
+        | llm_model
+    )
     try:
-        response = chain.invoke({
-            "context": formatted_context,
-            "chat_history": history,
-            "question": question,
-            "MASTER_PROMPT": support_prompt_generator.MASTER_PROMPT,               #you can pass your own tags as well, instead leave empty=""
-            "LLAMA3_ASSISTANT_TAG": support_prompt_generator.LLAMA3_ASSISTANT_TAG,
-            "LLAMA3_USER_TAG": support_prompt_generator.LLAMA3_USER_TAG,
-            "LLAMA3_SYSTEM_TAG": support_prompt_generator.LLAMA3_SYSTEM_TAG,
-        })
-
+        with get_openai_callback() as cb:
+            response = chain.invoke(
+                {
+                    "context": formatted_context,
+                    "chat_history": retrieved_history,
+                    "question": question,
+                    "MASTER_PROMPT": support_prompt_generator.MASTER_PROMPT,               #you can pass your own tags as well, instead leave empty=""
+                    "LLAMA3_ASSISTANT_TAG": support_prompt_generator.LLAMA3_ASSISTANT_TAG,
+                    "LLAMA3_USER_TAG": support_prompt_generator.LLAMA3_USER_TAG,
+                    "LLAMA3_SYSTEM_TAG": support_prompt_generator.LLAMA3_SYSTEM_TAG,
+                },
+                {"callbacks": [cb]},
+            )
         result = document_formatter.format_result(response)
         return result[0], result[1]
     except Exception as e:
         return f"Error: {str(e)}", {}
+
+def is_coroutine_check(result):
+    if asyncio.iscoroutine(result):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            # For running in an active event loop
+            return asyncio.run_coroutine_threadsafe(result, loop).result()
+        else:
+            return asyncio.run(result)
+    return result
 
 # Process the question in a custom flow
 def process_question(question: str, history: List[str]) -> Tuple[str, float, List[Any], dict, float]:
@@ -213,6 +268,7 @@ def process_question(question: str, history: List[str]) -> Tuple[str, float, Lis
 
     # Step 1: Detect the content type of the question (content moderation)
     content_type = question_moderator.detect(question, question_moderation_prompt=question_moderation_prompt)
+    content_type = is_coroutine_check(content_type)
     content_type = content_type.dict()
     
     if content_type["content"] == "IRRELEVANT-QUESTION":
@@ -222,29 +278,32 @@ def process_question(question: str, history: List[str]) -> Tuple[str, float, Lis
 
     # Step 2: Expand the query and retrieve results
     expanded_queries = custom_query_expander.expand_query(question)
+    expanded_queries = is_coroutine_check(expanded_queries)
+    print(expanded_queries)
     self_query, metadata_filters = self_query_retrieval.retrieve_query(question)
+    self_query = is_coroutine_check(self_query)
+    print(self_query)
     expanded_queries.append(self_query)
 
     combined_results = []
     results_to_store = []
     for query in expanded_queries:
-        output = milvus_hybrid_search.hybrid_search(question, search_limit=top_k)
+        output = milvus_hybrid_search.hybrid_search(query, search_limit=top_k, dense_search_limit=dense_topk, sparse_search_limit=sparse_topk)
+        output = is_coroutine_check(output)
         combined_results.extend(output)
         results_to_store.append({"question": query, "output": output})
 
     # Step 3: Rerank the results (optional)
     reranked_docs = document_reranker.rerank_docs(question, docs_to_rerank=combined_results, rerank_topk=rerank_topk)
-
+    reranked_docs = is_coroutine_check(reranked_docs)
     # Step 4: Format the final context
     formatted_context = document_formatter.format_docs(docs=reranked_docs)
-
     # Step 5: Generate the chatbot response using the LLM model
-    response= generate_chatbot_response(question, formatted_context, history)
-
+    response = generate_chatbot_response(question, formatted_context, history)
     # Step 6: Evaluate the results (optional)
     evaluated_results = {}
-    if True:  # Replace with your evaluation condition
-        evaluated_results = rag_evaluator.evaluate_rag([question], [response], combined_results)
+    # if True:  # Replace with your evaluation condition
+    #     evaluated_results = rag_evaluator.evaluate_rag([question], [response], combined_results)
 
     end_time = time.time() - start_time
     total_cost = calculate_cost_groq_llama31(response[1])  # Replace with your cost calculation logic

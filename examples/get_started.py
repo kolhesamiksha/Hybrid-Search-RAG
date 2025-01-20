@@ -6,7 +6,7 @@ from hybrid_rag.src.utils import Logger
 
 def chatbot():
     load_dotenv(dotenv_path=".env.example")
-    question = "heyy mannna"
+    question = "tell me about supply chain consulting?"
     history = []
     logger = Logger().get_logger()
     config = Config()
