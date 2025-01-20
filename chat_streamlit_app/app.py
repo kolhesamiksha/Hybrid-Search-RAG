@@ -11,6 +11,9 @@ from hybrid_rag.src.utils import Logger
 from hybrid_rag.src.utils.utils import save_history_to_github
 from hybrid_rag.src.utils.utils import save_history_to_s3
 
+import warnings
+warnings.filterwarnings("ignore")
+
 load_dotenv(dotenv_path=".env.example")
 logger = Logger().get_logger()
 config = Config()

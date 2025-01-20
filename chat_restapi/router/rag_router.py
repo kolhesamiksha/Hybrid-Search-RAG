@@ -1,20 +1,20 @@
 # Create a .env.example file with all Env variables added
-import subprocess
-import os
-
 import logging
+import os
+import subprocess
 
 from dotenv import load_dotenv
 from fastapi import APIRouter
-from fastapi import Response
-from fastapi import Request
 from fastapi import Depends
+from fastapi import Request
+from fastapi import Response
+import asyncio
+
+from .limiter import limiter
+from chat_restapi.schema import ResponseSchema
 from hybrid_rag.src.config import Config
 from hybrid_rag.src.rag import RAGChatbot
 from hybrid_rag.src.utils import Logger
-from chat_restapi.schema import ResponseSchema
-
-from .limiter import limiter
 
 # Construct the absolute path to the .whl file
 whl_path = "chat_restapi/hybrid_rag-0.1.0-py3-none-any.whl"
@@ -24,7 +24,7 @@ subprocess.run(["pip", "install", whl_path], check=True)
 rag_router = APIRouter()
 
 
-## Add dependecy injection to make code more modular and easy to debug
+## Add dependency injection to make code more modular and easy to debug
 def get_logger():
     return Logger().get_logger()
 
@@ -58,5 +58,5 @@ async def pred(
     question = payload.query
     history = payload.history
     chatbot_instance = RAGChatbot(config, logger)
-    prediction = chatbot_instance.advance_rag_chatbot(question, history)
+    prediction = asyncio.run(chatbot_instance._advance_rag_chatbot_async(question, history))
     return prediction[0]

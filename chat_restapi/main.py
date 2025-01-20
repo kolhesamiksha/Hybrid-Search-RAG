@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from fastapi.openapi.docs import get_swagger_ui_oauth2_redirect_html
 from fastapi.middleware.cors import CORSMiddleware
-from chat_restapi.router.rag_router import rag_router
-from chat_restapi.router.limiter import limiter
+from fastapi.openapi.docs import get_swagger_ui_oauth2_redirect_html
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+
+from chat_restapi.router.limiter import limiter
+from chat_restapi.router.rag_router import rag_router
 
 
 app = FastAPI(title="API", version="0.0.1", description="API")
