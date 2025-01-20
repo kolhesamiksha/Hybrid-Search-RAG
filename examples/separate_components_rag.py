@@ -288,7 +288,7 @@ def process_question(question: str, history: List[str]) -> Tuple[str, float, Lis
     combined_results = []
     results_to_store = []
     for query in expanded_queries:
-        output = milvus_hybrid_search.hybrid_search(query, search_limit=top_k, dense_search_limit=dense_topk, sparse_search_limit=sparse_topk)
+        output = milvus_hybrid_search.hybrid_search(query, search_limit=top_k, metadata_attributes=metadata_attributes, dense_search_limit=dense_topk, sparse_search_limit=sparse_topk)
         output = is_coroutine_check(output)
         combined_results.extend(output)
         results_to_store.append({"question": query, "output": output})
