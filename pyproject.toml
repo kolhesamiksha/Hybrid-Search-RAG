@@ -42,6 +42,8 @@ python-dotenv = "^1.0.1"
 mlflow = "^2.19.0"
 boto3 = "^1.35.96"
 psutil = "^6.1.1"
+nvidia-ml-py3 = "^7.352.0"
+slowapi = "^0.1.9"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.5.0"

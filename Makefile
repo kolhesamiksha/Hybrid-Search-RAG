@@ -5,7 +5,7 @@ SRC_DIR := $(PACKAGE_NAME)/src  # Source directory
 TEST_DIR := tests  # Test directory
 .PRECOMMIT := .pre-commit-config.yaml
 
-.PHONY: help install test build clean lint format type-check codespell install-precommit run-precommit
+.PHONY: help install test build clean lint format type-check codespell install-precommit run-precommit changelog
 
 # Display available commands
 help:
@@ -42,6 +42,9 @@ test:
 build:
 	@echo "Building the package as a wheel file..."
 	poetry build
+
+changelog:
+	towncrier build --yes
 
 # Clean build artifacts
 clean:
