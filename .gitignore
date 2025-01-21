@@ -29,7 +29,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+mlruns
+mlflow.db
 # Google GitHub Actions credentials files created by:
 # https://github.com/google-github-actions/auth
 #
@@ -120,6 +121,7 @@ venv*
 env/
 ENV/
 env.bak/
+.env.example
 
 # Spyder project settings
 .spyderproject
