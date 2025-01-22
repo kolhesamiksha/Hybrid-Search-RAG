@@ -311,6 +311,9 @@ class Config:
             _get_env_var("RERANK_TOPK", default_value=3, required=False)
         )
     )
+    FOLLOWUP_TEMPLATE: str = field(
+        default_factory=lambda:_get_env_var("FOLLOWUP_TEMPLATE", default_value="Generate 5 followup questions based on the question, context of the question and response for more comprehensive and relatable to the question.", required=False)
+    )
 
 
 def _get_env_var(var_name: str, default_value: Any = "", required: bool = True) -> Any:
