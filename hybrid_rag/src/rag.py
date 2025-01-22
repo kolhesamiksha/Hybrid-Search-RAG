@@ -465,7 +465,7 @@ class RAGChatbot:
                     with mlflow.start_span(name="hybrid_search") as search_span:
                         queries = (query for query in expanded_queries)
                         outputs = await asyncio.gather(*[
-                            self.milvusHybridSearch.hybrid_search_async(query, self.config.HYBRID_SEARCH_TOPK, self.config.DENSE_SEARCH_LIMIT, self.config.SPARSE_SEARCH_LIMIT)
+                            self.milvusHybridSearch.hybrid_search_async(query, metadata_filters, self.config.HYBRID_SEARCH_TOPK, self.config.DENSE_SEARCH_LIMIT, self.config.SPARSE_SEARCH_LIMIT)
                             for query in queries
                         ])
 
