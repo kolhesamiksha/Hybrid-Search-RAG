@@ -37,7 +37,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 # LECL chain modules
 from langchain.callbacks import get_openai_callback
 from langchain_core.runnables import (
-    RunnablePassthrough,
+    RunnableParallel,
+    RunnablePassthrough
 )
 
 from hybrid_rag.src.advance_rag import (
@@ -53,6 +54,10 @@ from hybrid_rag.src.moderation import QuestionModerator
 from hybrid_rag.src.prompts.prompt import (
     SupportPromptGenerator,
 )
+from hybrid_rag.src.prompts.followup_prompt import (
+    FollowupPromptGenerator,
+)
+
 from hybrid_rag.src.utils import (
     DocumentFormatter,
     Logger,
@@ -60,6 +65,7 @@ from hybrid_rag.src.utils import (
 from hybrid_rag.src.vectordb import VectorStoreManager
 from hybrid_rag.src.custom_mlflow.predict import RAGChatbotModel
 from hybrid_rag.src.utils.utils import calculate_cost_groq_llama31
+from hybrid_rag.src.utils.followup_questions import FollowupQGeneration
 
 # TODO:add Logger & exceptions
 warnings.filterwarnings("ignore")
@@ -108,6 +114,11 @@ class RAGChatbot:
             self.config.MODEL_SPECIFIC_PROMPT_ASSISTANT_TAG,
             self.logger,
         )
+        self.followupPromptGenerator = FollowupPromptGenerator(
+            self.config.FOLLOWUP_TEMPLATE,
+            self.logger
+        )
+
         self.llmModelInitializer = LLMModelInitializer(
             self.config.LLM_MODEL_NAME,
             self.config.PROVIDER_BASE_URL,
@@ -166,6 +177,11 @@ class RAGChatbot:
             self.config.DENSE_EMBEDDING_MODEL,
             self.llmModelInitializer,
             self.logger,
+        )
+        self.followupqgenerator = FollowupQGeneration(
+            self.llmModelInitializer,
+            self.followupPromptGenerator,
+            self.logger
         )
 
         if isinstance(os.getenv("DENSE_SEARCH_PARAMS"), dict):
@@ -265,6 +281,7 @@ class RAGChatbot:
         prompt = self.supportPromptGenerator.generate_prompt()
 
         # Define the chain of operations including the language model.
+        runner = R
         chain = (
             {
                 "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
@@ -278,6 +295,7 @@ class RAGChatbot:
             | prompt
             | llm_model
         )
+
         self.logger.info("Successfully Initlalised the Chain.")
         try:
             # Use the OpenAI callback to monitor API usage.
@@ -382,7 +400,7 @@ class RAGChatbot:
     #@profile  #memory-profiler for montoring code memory consumption!!
     async def _advance_rag_chatbot_async(
         self, question: str, history: List[str]
-    ) -> Tuple[str, float, List[Any], dict, float]:
+    ) -> Tuple[str, float, List[Any], dict, float, List[str]]:
         """
         Processes a question through the chatbot pipeline, including content moderation, query expansion, document retrieval, and response generation.
 
@@ -437,7 +455,7 @@ class RAGChatbot:
                             end_time = time.time() - st_time
                             response = "Detected harmful content in the Question, Please Rephrase your question and Provide meaningful Question."
                             self.logger.info("IRRELEVANT-QUESTION")
-                            return (response, end_time, [], {}, 0.0)
+                            return (response, end_time, [], {}, 0.0, [])
                     
                     with mlflow.start_span(name="query_expansion") as query_span:
                         # Expand the query and retrieve results.
@@ -561,6 +579,17 @@ class RAGChatbot:
                 else:
                     total_cost = 0.0
                 
+                if self.config.IS_FOLLOWUP:
+                    try:
+                        #Generate Followup Questions
+                        followup_questions = self.followupqgenerator.generate_followups(reranked_docs,response)
+                    except Exception as e:
+                        followup_questions = []
+                        self.logger.error(f"Error While Generating Followup Questions! {str(e)} TRACEBACK: {traceback.format_exc()}")
+                else:
+                    self.logger.info("Followup Question generation is not allowed")
+                    followup_questions = []
+
                 system_metrics = self._get_system_metrics()
                 mlflow.log_metrics({
                     "cpu_percent": system_metrics["cpu_percent"],
@@ -599,6 +628,7 @@ class RAGChatbot:
                     combined_results,
                     evaluated_results,
                     total_cost,
+                    followup_questions,
                 )
             except Exception:
                 self._garbage_collector("dummy_to_delete")
