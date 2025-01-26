@@ -30,10 +30,7 @@ class RAGChatbotModel(mlflow.pyfunc.PythonModel):
             raise ValueError("Received empty input DataFrame.")
         question = str(model_input['question'].iloc[0])
         history_str = str(model_input['history'].iloc[0])
-        print(question)
-        print(type(question))
-        print(history_str)
-        print(type(history_str))
+
         try:
             if history_str == "[]":
                 history = []

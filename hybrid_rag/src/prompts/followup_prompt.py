@@ -63,7 +63,7 @@ class FollowupPromptGenerator:
         """
         
         support_template = f"""
-        {{support_template}}
+        {self.PROMPT_TEMPLATE}
 
         Please consider below knowldge as reference, don't generate any questions outside of below context.
         ---------------------
@@ -80,7 +80,7 @@ class FollowupPromptGenerator:
         try:
             follwup_prompt = PromptTemplate(
                 template=support_template,
-                input_variables=["support_template", "question", "response", "context"],
+                input_variables=["question", "response", "context"],
             )
             self.logger.info("Successfully generated the Followup Prompt Template.")
             return follwup_prompt

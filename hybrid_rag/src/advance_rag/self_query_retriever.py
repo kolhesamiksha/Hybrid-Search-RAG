@@ -69,10 +69,10 @@ class SelfQueryRetrieval:
 
             # Initialize SelfQueryRetriever
             self.selfq_retriever = SelfQueryRetriever.from_llm(
-                self.llm_model_instance,
-                self.vector_store,
-                self.document_content_description,
-                self.metadata_field_info,
+                llm=self.llm_model_instance,
+                vectorstore=self.vector_store,
+                document_contents=self.document_content_description,
+                metadata_field_info=self.metadata_field_info,
                 verbose=True,
             )
         except Exception as e:
@@ -84,20 +84,24 @@ class SelfQueryRetrieval:
 
     def _create_attribute_info(self, attributes: List[Dict[str, str]]) -> List[AttributeInfo]: 
         attribute_info_list = []
-        for attribute in attributes:
-            
-            # Extract name, description, and type from each dictionary
-            name = attribute.get("name", "name")
-            description = attribute.get("description", "description")
-            type_ = attribute.get("type", "description")
+        try:
+            for attribute in attributes:
+                
+                # Extract name, description, and type from each dictionary
+                name = attribute.get("name", "name")
+                description = attribute.get("description", "description")
+                type_ = attribute.get("type", "description")
 
-            # Check if all required keys are present
-            if not name or not description or not type_:
-                raise ValueError(f"Each dictionary must contain 'name', 'description', and 'type' keys. Missing data: {attribute}")
-            
-            # Create AttributeInfo and append to the list
-            attribute_info_list.append(AttributeInfo(name=name, description=description, type=type_))
-    
+                # Check if all required keys are present
+                if not name or not description or not type_:
+                    raise ValueError(f"Each dictionary must contain 'name', 'description', and 'type' keys. Missing data: {attribute}")
+                
+                # Create AttributeInfo and append to the list
+                attribute_info_list.append(AttributeInfo(name=name, description=description, type=type_))
+                self.logger.info(f"Successfully extracted metadata attributes from List of dict to list {attribute_info_list}")
+        except Exception as e:
+            self.logger.error("Error while converting the metadata to a list")
+        
         return attribute_info_list                
     
     async def retrieve_query_async(self, question: str) -> tuple[str, dict]:
@@ -120,7 +124,7 @@ class SelfQueryRetrieval:
                 question, structured_query
             )
             self.logger.info(
-                "Succesfully Executed the SelfQuery & generated metafieltering params and new query"
+                f"Succesfully Executed the SelfQuery & generated metafieltering params and new query New Query{new_query} & Metafilters {search_kwargs}"
             )
             return new_query, search_kwargs
         except Exception as e:

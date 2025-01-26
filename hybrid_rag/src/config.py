@@ -302,6 +302,13 @@ class Config:
             }
         ])
     
+    MLFLOW_ASR_EXPERIMENT_NAME: str = field(
+        default_factory=lambda: _get_env_var("MLFLOW_ASR_EXPERIMENT_NAME", default_value="asr_experiment", required=False)
+    )
+    MLFLOW_ASR_RUN_NAME: str = field(
+        default_factory=lambda: _get_env_var("MLFLOW_ASR_RUN_NAME", default_value="asr_run", required=False)
+    )
+
     SELF_RAG_DOCUMENTS_BRIEF_SUMMARY: str = field(
         default_factory=lambda: _get_env_var("SELF_RAG_DOCUMENTS_BRIEF_SUMMARY", default_value="ey company docs contains audit, tax, ai & supply chain domains", required=False), 
     )
@@ -313,6 +320,45 @@ class Config:
     )
     FOLLOWUP_TEMPLATE: str = field(
         default_factory=lambda:_get_env_var("FOLLOWUP_TEMPLATE", default_value="Generate 5 followup questions based on the question, context of the question and response for more comprehensive and relatable to the question.", required=False)
+    )
+    IS_ASR_LOCAL: bool = field(
+        default_factory=lambda: _get_env_var(
+            "IS_ASR_LOCAL", default_value="True", required=False
+        ).lower()
+        in ("true", "1", "yes")
+    )
+
+    ASR_LOCAL_MODEL_NAME: str = field(
+        default_factory=lambda: _get_env_var("ASR_LOCAL_MODEL_NAME", default_value="ai4bharat/indicwav2vec-hindi", required=False)
+    )
+
+    IS_ASR_HUGGING_FACE: bool = field(
+        default_factory=lambda: _get_env_var(
+            "IS_ASR_HUGGING_FACE", default_value="True", required=False
+        ).lower()
+        in ("true", "1", "yes")
+    )
+
+    HUGGING_FACE_TOKEN: str = field(
+        default_factory=lambda: _get_env_var("HUGGING_FACE_TOKEN", default_value="", required=False)
+    )
+
+    ASR_HG_MODEL_NAME: str = field(
+        default_factory=lambda: _get_env_var("ASR_HG_MODEL_NAME", default_value="openai/whisper-small", required=False)
+    )
+    HUGGING_FACE_ENDPOINT: str = field(
+        default_factory=lambda: _get_env_var("HUGGING_FACE_ENDPOINT", default_value="", required=False)
+    )
+
+    IS_ASR_MLFLOW: bool = field(
+        default_factory=lambda: _get_env_var(
+            "IS_ASR_MLFLOW", default_value="True", required=False
+        ).lower()
+        in ("true", "1", "yes")
+    )
+
+    MLFLOW_ASR_MODEL_NAME: str = field(
+        default_factory=lambda: _get_env_var("MLFLOW_ASR_MODEL_NAME", default_value="vasista22/whisper-hindi-small", required=False)
     )
 
 

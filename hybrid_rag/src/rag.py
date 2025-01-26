@@ -139,6 +139,7 @@ class RAGChatbot:
             self.config.DENSE_EMBEDDING_MODEL,
             self.config.SPARSE_SEARCH_PARAMS,
             self.config.DENSE_SEARCH_PARAMS,
+            self.config.SELF_RAG_METADATA_ATTRIBUTES,
             self.vectorDBInitializer,
             self.logger,
         )
@@ -253,7 +254,6 @@ class RAGChatbot:
         }
         return metrics
 
-
     async def _chatbot(
         self, question: str, formatted_context: str, retrieved_history: List[str]
     ) -> Tuple[str, dict]:
@@ -281,21 +281,36 @@ class RAGChatbot:
         prompt = self.supportPromptGenerator.generate_prompt()
 
         # Define the chain of operations including the language model.
-        runner = R
+        # chain = (
+        #     {
+        #         "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
+        #         "LLAMA3_USER_TAG": RunnablePassthrough(),
+        #         "LLAMA3_SYSTEM_TAG": RunnablePassthrough(),
+        #         "context": RunnablePassthrough(),
+        #         "question": RunnablePassthrough(),
+        #         "chat_history": RunnablePassthrough(),
+        #         "MASTER_PROMPT": RunnablePassthrough(),
+        #     }
+        #     | prompt
+        #     | llm_model
+        # )
+
+        ########### Rnnable Parallel Chaining reduces the chaining time by 30% ###############
         chain = (
-            {
-                "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
-                "LLAMA3_USER_TAG": RunnablePassthrough(),
-                "LLAMA3_SYSTEM_TAG": RunnablePassthrough(),
-                "context": RunnablePassthrough(),
-                "question": RunnablePassthrough(),
-                "chat_history": RunnablePassthrough(),
-                "MASTER_PROMPT": RunnablePassthrough(),
-            }
+            RunnableParallel(
+                {
+                    "LLAMA3_ASSISTANT_TAG": RunnablePassthrough(),
+                    "LLAMA3_USER_TAG": RunnablePassthrough(),
+                    "LLAMA3_SYSTEM_TAG": RunnablePassthrough(),
+                    "context": RunnablePassthrough(),
+                    "question": RunnablePassthrough(),
+                    "chat_history": RunnablePassthrough(),
+                    "MASTER_PROMPT": RunnablePassthrough(),  # Ensure it's a `Runnable`
+                }
+            )
             | prompt
             | llm_model
         )
-
         self.logger.info("Successfully Initlalised the Chain.")
         try:
             # Use the OpenAI callback to monitor API usage.
@@ -469,6 +484,8 @@ class RAGChatbot:
                         metadata_filters_str = json.dumps(metadata_filters)
                         mlflow.log_param("self_query_metadata_filters", metadata_filters_str)
                         
+                        print(f"METADATA FILTERS: {metadata_filters}")
+
                         expanded_queries.append(self_query[0])
                         self.logger.info(f"Expanded Queries are: {expanded_queries}")
                         self.logger.info(
@@ -487,7 +504,7 @@ class RAGChatbot:
                             for query in queries
                         ])
 
-                        #Use generator to avoid loading 48 combined documents inside a list -> Memory Optimisation
+                        #Use generator to avoid loading 48 combined documents inside a list with a vast amount of text as page content-> Memory Optimisation
                         results_to_store = (
                             result for result in self._generate_results_to_store(expanded_queries, outputs)
                         )
@@ -544,7 +561,6 @@ class RAGChatbot:
                         })
 
                         del reranker_to_mlflow
-                        del reranked_docs
 
                     with mlflow.start_span(name="evaluate_response") as evaluate_span:
                         # Generate the chatbot response.
@@ -556,7 +572,25 @@ class RAGChatbot:
                             "Chatbot Response": response,
                             "Token Usage": token_usage
                             })
+
+                    with mlflow.start_span(name="followup_questions") as followup_span:
+                        if self.config.IS_FOLLOWUP:
+                            try:
+                                #Generate Followup Questions
+                                followup_questions = await self.followupqgenerator.generate_followups(question, reranked_docs, response)
+                            except Exception as e:
+                                followup_questions = []
+                                self.logger.error(f"Error While Generating Followup Questions! {str(e)} TRACEBACK: {traceback.format_exc()}")
+                        else:
+                            self.logger.info("Followup Question generation is not allowed")
+                            followup_questions = []
                         
+                        followup_span.set_attributes({
+                                "followup_questions": followup_questions
+                            })
+                        mlflow.log_param("followup_questions", followup_questions)
+                        del reranked_docs
+
                     with mlflow.start_span(name="ragas_evaluation") as ragas_span:
                         if self.config.IS_EVALUATE:
                             evaluated_results = await self.ragaEvaluator.evaluate_rag_async(
@@ -579,17 +613,6 @@ class RAGChatbot:
                 else:
                     total_cost = 0.0
                 
-                if self.config.IS_FOLLOWUP:
-                    try:
-                        #Generate Followup Questions
-                        followup_questions = self.followupqgenerator.generate_followups(reranked_docs,response)
-                    except Exception as e:
-                        followup_questions = []
-                        self.logger.error(f"Error While Generating Followup Questions! {str(e)} TRACEBACK: {traceback.format_exc()}")
-                else:
-                    self.logger.info("Followup Question generation is not allowed")
-                    followup_questions = []
-
                 system_metrics = self._get_system_metrics()
                 mlflow.log_metrics({
                     "cpu_percent": system_metrics["cpu_percent"],

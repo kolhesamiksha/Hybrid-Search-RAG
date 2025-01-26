@@ -22,8 +22,12 @@ from langchain_core.runnables import (
 from langchain_core.output_parsers import BaseOutputParser
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
-from hybrid_rag.src.utils.logutils import Logger
 
+from hybrid_rag.src.utils.logutils import Logger
+from hybrid_rag.src.models import LLMModelInitializer
+from hybrid_rag.src.prompts.followup_prompt import (
+    FollowupPromptGenerator,
+)
 
 # Custom Query Expansion Class
 class LineListOutputParser(BaseOutputParser[List[str]]):
@@ -35,25 +39,34 @@ class LineListOutputParser(BaseOutputParser[List[str]]):
         return cleaned_lines
 
 class FollowupQGeneration:
-    def __init__(self, llm_model, followup_template, logger: Optional[logging.Logger] = None):
-        self.llm_model = llm_model
-        self.FOLLOWUP_PROMPT_TEMPLATE = followup_template
+    def __init__(self, llm_model:LLMModelInitializer, followup_template: FollowupPromptGenerator, logger: Optional[logging.Logger] = None):
+        self.llm_model = llm_model.initialise_llm_model()
+        self.FOLLOWUP_PROMPT_TEMPLATE = followup_template.generate_prompt()
         self.logger = logger
 
-    def generate_followups(self, context: List[Document], response:str) -> List[str]:
-
+    async def generate_followups(self, question: str, context: List[Document], response:str) -> List[str]:
         try:
-            runner = RunnableParallel(
-                {"response": response, "context": context, "question": RunnablePassthrough()}
+
+            #Rnnable Parallel Chaining reduces the chaining time by 30%
+            output_parser = LineListOutputParser()
+            chain = (
+                RunnableParallel(
+                    {
+                        "response": RunnablePassthrough(),
+                        "context": RunnablePassthrough(),
+                        "question": RunnablePassthrough(),
+                    }
+                )
+                | self.FOLLOWUP_PROMPT_TEMPLATE 
+                | self.llm_model 
+                | output_parser
             )
 
-            output_parser = LineListOutputParser()
-            output = runner | self.FOLLOWUP_PROMPT_TEMPLATE | self.llm_model | output_parser
+            result = await chain.ainvoke({"question": question, "context": context, "response": response})
             self.logger.info("Successfully Generated the Followup Questions!")
+            return result
         except Exception as e:
-            output = str(e)
             self.logger.info(f"Error while Generating the Followup question : {str(e)} traceback: {traceback.format_exc()}")
-        
-        return output
+            raise
 
 
