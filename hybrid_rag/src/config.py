@@ -361,6 +361,29 @@ class Config:
         default_factory=lambda: _get_env_var("MLFLOW_ASR_MODEL_NAME", default_value="vasista22/whisper-hindi-small", required=False)
     )
 
+    METADATA_FILTERATION_FIELD: str = field(
+        default_factory=lambda: _get_env_var("METADATA_FILTERATION_FIELD", default_value="topic", required=True)
+    )
+
+    MILVUS_ITERATOR_BATCH_SIZE: int = field(
+        default_factory=lambda: _get_env_var("MILVUS_ITERATOR_BATCH_SIZE", default_value=50, required=False)
+    )
+
+    ITERATIVE_SEARCH_LIMIT: int = field(
+        default_factory=lambda: _get_env_var("ITERATIVE_SEARCH_LIMIT", default_value=10000, required=False)
+    )
+
+    MAP_PROMPT: str = field(
+        default_factory=lambda: _get_env_var("MAP_PROMPT", default_value="The following is a set of documents below \nBased on this list of docs, please identify the main themes.", required=False)
+    )
+
+    REDUCE_PROMPT: str = field(
+        default_factory=lambda: _get_env_var("REDUCE_PROMPT", default_value="The following is set of summaries provided below \nTake these and distill it into a final, consolidated summary of the main themes.", required=False)
+    )
+
+    META_FILTERING_PROMPT: str = field(
+        default_factory=lambda: _get_env_var("METADATA_FILTER_EXTRACTOR_FROM_QUESTION_PROMPT", default_value="topic", required=False)
+    )
 
 def _get_env_var(var_name: str, default_value: Any = "", required: bool = True) -> Any:
     """
