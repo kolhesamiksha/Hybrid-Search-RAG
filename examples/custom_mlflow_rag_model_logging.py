@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import pandas as pd
 from mlflow.models import validate_serving_input
 from hybrid_rag import Config
-from hybrid_rag.src.log_model import CustomMlflowLogging
+from hybrid_rag import CustomMlflowLogging
 from hybrid_rag.src.utils import Logger
 
 import subprocess
