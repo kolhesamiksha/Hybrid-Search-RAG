@@ -1,5 +1,5 @@
 """
-Module Name: hybrid_search.py
+Module Name: hybrid_search
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
@@ -188,20 +188,20 @@ class RAGChatbot:
         if isinstance(os.getenv("DENSE_SEARCH_PARAMS"), dict):
             for key, value in os.getenv("DENSE_SEARCH_PARAMS").items():
                 mlflow.log_param(key, value)
-                print(
+                self.logger.info(
                     f"Logged {len(os.getenv('DENSE_SEARCH_PARAMS'))} parameters to MLflow."
                 )
             else:
-                print("dense_search_params is not a dictionary.")
+                self.logger.info("dense_search_params is not a dictionary.")
 
         if isinstance(os.getenv("SPARSE_SEARCH_PARAMS"), dict):
             for key, value in os.getenv("SPARSE_SEARCH_PARAMS").items():
                 mlflow.log_param(key, value)
-                print(
+                self.logger.info(
                     f"Logged {len(os.getenv('SPARSE_SEARCH_PARAMS'))} parameters to MLflow."
                 )
             else:
-                print("spase_search_params is not a dictionary.")
+                self.logger.info("spase_search_params is not a dictionary.")
         #mlflow.langchain.autolog(log_models=True,log_input_examples=True)
 
     def _setup_mlflow(self):
@@ -220,11 +220,11 @@ class RAGChatbot:
 
         try:
             # Start the MLflow server
-            print("Starting MLflow server...")
+            self.logger.info("Starting MLflow server...")
             subprocess.Popen(mlflow_command)
-            print("MLflow server started on http://localhost:5000")
+            self.logger.info("MLflow server started on http://localhost:5000")
         except Exception as e:
-            print(f"Failed to start MLflow server: {e}")
+            self.logger.error(f"Failed to start MLflow server: {e}")
 
     def _get_system_metrics(self):
         """
@@ -376,7 +376,7 @@ class RAGChatbot:
                 )
             else:
                 # Handle non-Document objects gracefully
-                print(f"Skipping non-Document object: {document}")
+                self.logger.info(f"Skipping non-Document object: {document}")
         return converted_results
 
     def convert_to_serializable(self,obj):
@@ -408,9 +408,9 @@ class RAGChatbot:
             if os.path.exists(folder_name):
                 shutil.rmtree(folder_name)
             else:
-                print(f"The directory '{folder_name}' does not exist.")
+                self.logger.info(f"The directory '{folder_name}' does not exist.")
         except Exception as e:
-            print(f"An error occurred while deleting the directory: {e}")
+            self.logger.error(f"An error occurred while deleting the directory: {e}")
 
     #@profile  #memory-profiler for montoring code memory consumption!!
     async def _advance_rag_chatbot_async(
@@ -484,7 +484,7 @@ class RAGChatbot:
                         metadata_filters_str = json.dumps(metadata_filters)
                         mlflow.log_param("self_query_metadata_filters", metadata_filters_str)
                         
-                        print(f"METADATA FILTERS: {metadata_filters}")
+                        self.logger.info(f"METADATA FILTERS: {metadata_filters}")
 
                         expanded_queries.append(self_query[0])
                         self.logger.info(f"Expanded Queries are: {expanded_queries}")
@@ -603,7 +603,7 @@ class RAGChatbot:
                         #     "evaluated_results": evaluated_results,
                         # })
 
-                print(f"Evaluation Result: {evaluated_results}")
+                self.logger.info(f"Evaluation Result: {evaluated_results}")
                 if token_usage:
                     total_cost = calculate_cost_groq_llama31(
                         token_usage,
@@ -655,11 +655,11 @@ class RAGChatbot:
                 )
             except Exception:
                 self._garbage_collector("dummy_to_delete")
-                print(f"ERROR: {traceback.format_exc()}")
+                self.logger.error(f"ERROR: {traceback.format_exc()}")
                 total_cost = 0.0
                 return ("ERROR", time.time() - st_time, [], {}, 0.0)
         
-        print(f"Total_Time_required: {time.time()-st_time}")
+        self.logger.info(f"Total_Time_required: {time.time()-st_time}")
         mlflow.end_run()
     
     def advance_rag_chatbot(self, question, history):
@@ -682,4 +682,4 @@ class RAGChatbot:
         
         # profiler.disable()
         # profiler.print_stats(sort="time")
-        return result  
+        return result
