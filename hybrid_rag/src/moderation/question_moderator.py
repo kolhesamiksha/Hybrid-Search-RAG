@@ -1,3 +1,9 @@
+"""
+Module Name: hybrid_search
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
+
 import asyncio
 from typing import Optional
 import logging
