@@ -1,5 +1,5 @@
 """
-Module Name: hybrid_search.py
+Module Name: hybrid_search
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
@@ -27,7 +27,7 @@ class FollowupPromptGenerator:
             Initializes the SupportPromptGenerator with necessary system tags and master prompt.
         
         generate_prompt() -> PromptTemplate:
-            Generates the QA prompt template using the initialized values.
+            Generates the followup prompt generation template using the initialized values.
             Returns:
                 PromptTemplate: The generated QA prompt template.
     """
@@ -53,7 +53,7 @@ class FollowupPromptGenerator:
 
     def generate_prompt(self) -> PromptTemplate:
         """
-        Generates the QA prompt template using the initialized values.
+        Generates the Followup prompt template using the initialized values.
 
         Args:
             None: This method uses the instance attributes to create the template.
