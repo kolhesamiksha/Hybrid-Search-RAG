@@ -1,19 +1,25 @@
 """
-Module Name: hybrid_search.py
+Module Name: hybrid_search
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
 import logging
+import time
+import traceback
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
+from typing import Union
+from typing import Generator, AsyncGenerator
 import asyncio
+
 
 from langchain_core.documents import Document
 from pymilvus import AnnSearchRequest
 from pymilvus import RRFRanker
 from pymilvus import SearchResult
+from pymilvus import MilvusClient, DataType
 
 from hybrid_rag.src.models.retriever_model.models import EmbeddingModels
 from hybrid_rag.src.utils.logutils import Logger
@@ -112,7 +118,7 @@ class MilvusHybridSearch:
                 attribute_info.append(attribute_name)
 
         return attribute_info
-    
+
     def perform_search(
         self, 
         sparse_question_emb: object, 
@@ -169,13 +175,13 @@ class MilvusHybridSearch:
                 doc_chunk = Document(page_content=page_content, metadata=metadata)
                 output.append(doc_chunk)
         return output
-
+    
     async def hybrid_search_async(self, 
             question: str,
-            metadata_filters: dict, 
+            filter_expr: dict, 
             search_limit: int, 
             dense_search_limit: int, 
-            sparse_search_limit:int, 
+            sparse_search_limit:int,
         ) -> List[Document]:
         """
         Perform hybrid search by generating embeddings, performing search, and processing results.
@@ -188,9 +194,9 @@ class MilvusHybridSearch:
         """
         # Generate sparse and dense embeddings
         sparse_question_emb, dense_question_emb = await self.generate_embeddings(question)
-
+        
         # Perform hybrid search
-        res = self.perform_search(sparse_question_emb, dense_question_emb, search_limit, dense_search_limit, sparse_search_limit, metadata_filters)
+        res = self.perform_search(sparse_question_emb, dense_question_emb, search_limit, dense_search_limit, sparse_search_limit, filter_expr)
         self.logger.info(f"Results After Hybrid Search: {res}")
         # Process and return results
         output = self.process_results(res)
@@ -222,3 +228,4 @@ class MilvusHybridSearch:
         except Exception as e:
             self.logger.error(f"Error in async hybrid_search: {e}")
             raise
+
