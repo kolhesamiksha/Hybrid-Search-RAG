@@ -1,5 +1,5 @@
 """
-Module Name: hybrid_search.py
+Module Name: hybrid_search
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
