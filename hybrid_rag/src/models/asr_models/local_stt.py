@@ -1,3 +1,9 @@
+"""
+Module Name: hybrid_search
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
+
 import torch
 import traceback
 from datasets import Dataset, Audio
@@ -8,7 +14,7 @@ from hybrid_rag.src.config import Config
 
 class LocalASRModel:
     """
-    A class to handle local deployment and transcription using Indic ASR models.
+    A class to handle local deployment and transcription using ASR models.
 
     Attributes:
         model_name (str): The name of the Hugging Face model.
@@ -56,12 +62,13 @@ class LocalASRModel:
             with torch.no_grad():
                 logits = model(input_values.to(DEVICE_ID)).logits.cpu().numpy() 
 
-            print(f"LOGITS SHAPE : {logits.shape}")
+            self.logger.info(f"LOGITS SHAPE : {logits.shape}")
+            
             # Decode predictions
             transcription = processor.batch_decode(logits)
 
-            print(f"TRANSCRIPTION: {transcription[0]}")
             return transcription[0]
 
         except Exception as e:
-            raise RuntimeError(f"Error during transcription: {traceback.format_exc(e)}")
+            self.logger.info(f"ERROR during local model transcipt generation, TRACEBACK: {traceback.format_exc()}")
+            raise RuntimeError(f"Error during transcription: {traceback.format_exc()}")

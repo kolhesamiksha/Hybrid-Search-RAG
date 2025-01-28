@@ -1,5 +1,5 @@
 """
-Module Name: hybrid_search.py
+Module Name: hybrid_search
 Author: Samiksha Kolhe
 Version: 0.1.0
 """
@@ -51,7 +51,6 @@ class EmbeddingModels:
         """
         try:
             embeddings = self._get_sparse_embedding_model()
-            print(f"Sparse Embedding Type: {texts}")
             query_embeddings = embeddings.embed_documents([texts])
             logger.info(
                 f"Successfully Converted the text into Sparse Vectors Using model: {self.embed_model}"
@@ -89,7 +88,6 @@ class EmbeddingModels:
         """
         try:
             embeddings = self._get_dense_embedding_model()
-            print(f"Dense Embedding: {texts}")
             query_embeddings = embeddings.embed_documents([texts])
             logger.info(
                 f"Successfully Converted the text into Dense Vectors Using Model : {self.embed_model}"

@@ -1,3 +1,9 @@
+"""
+Module Name: hybrid_search
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
+import traceback
 import requests
 import os
 import mimetypes
@@ -78,10 +84,11 @@ class HuggingFaceAudioModels:
             if transcription is None:
                 raise ValueError("The response does not contain a 'text' field.")
 
-            print(transcription)
+            self.logger.info(f"Successfully Extracted the Transcript using Hugging Face Serverless API: {transcription}")
             return transcription
 
         except Exception as e:
+            self.logger.error(f"ERROR During Transcript generation using HG Serveless API: TRACEBACK: {traceback.format_exc()}")
             raise RuntimeError(f"Error during API call: {e}")
 
     # NOTE: Only used this method if you deployed your models on hugging face
@@ -117,8 +124,9 @@ class HuggingFaceAudioModels:
             if transcription is None:
                 raise ValueError("The response does not contain a 'text' field.")
 
-            print(transcription)
+            self.logger.info(f"Successfully Extracted the Transcript using Hugging Face Serverless API: {transcription}")
             return transcription
 
         except Exception as e:
+            self.logger.error(f"ERROR During Transcript generation using HG Endpoint: TRACEBACK: {traceback.format_exc()}")
             raise RuntimeError(f"Error during API call: {e}")
