@@ -1,3 +1,9 @@
+"""
+Module Name: hybrid_search
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
+
 import json
 import mlflow
 import ast
@@ -35,9 +41,7 @@ class RAGChatbotModel(mlflow.pyfunc.PythonModel):
             if history_str == "[]":
                 history = []
             else:
-                history = ast.literal_eval(history_str)
-            print(history)
-            print(type(history))    
+                history = ast.literal_eval(history_str)   
         except Exception as e:
             self.logger.info("Exception in predict method")
         
