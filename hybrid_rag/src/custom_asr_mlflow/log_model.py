@@ -1,3 +1,9 @@
+"""
+Module Name: hybrid_search
+Author: Samiksha Kolhe
+Version: 0.1.0
+"""
+
 import os
 import torch
 import transformers
@@ -111,7 +117,7 @@ class CustomASRMlflowLogging:
             try:
                 self.run_id = run.info.run_id
                 self.logger.info(f"Started MLflow run with ID: {self.run_id}")
-                print(f"MLFLOW ASR MODEL LOGGING NAME: {self.config.MLFLOW_ASR_MODEL_NAME}")
+                self.logger.info(f"MLFLOW ASR MODEL LOGGING NAME: {self.config.MLFLOW_ASR_MODEL_NAME}")
                 mlflow.pyfunc.log_model(
                     "multilingual_asr_model",
                     python_model=ASRLogging(),
