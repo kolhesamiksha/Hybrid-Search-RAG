@@ -1,188 +1,146 @@
-# Hybrid-Search-RAG-Chatbot
+# 🚀 Hybrid RAG (v0.1.0): Advanced Retrieval & Generation Python Package
 
-This Chatbot Application is builted using Advance RAG Techniques, It helps to answer Queries regarding Technology and Latest trends in the Market. Vast amount of Latest trends, knowledge/case studies from Domain Experts and blogs was available, collected from ey website.  
+Build production-ready RAG solutions effortlessly with just a few lines of code! Hybrid RAG is designed to streamline your Retrieval-Augmented Generation (RAG) pipeline, making it easy to track, evaluate, and optimize your system for real-world applications, Explicit Asyncio support!!!!
 
-![Advance_RAG_Chatbot](https://github.com/user-attachments/assets/e048d51c-0b9d-4eaa-850b-624f79ead5ed)
+### 🔥 Why Hybrid RAG?
 
+✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
+✅ **Experiment Tracking & Tracing with MLflow** – Log experiments, parameters, and traces for every LLM and retrieval step, ensuring efficient latency & cost tracking.
+✅ **RAG Evaluation with Ragas** – Measure performance using faithfulness, answer relevance, and context precision, with future support for MLflow evaluation.
+✅ **Cost Monitoring** – Keep track of API usage by setting LLM pricing inside API parameters to optimize expenses.
+✅ **Hybrid Search Capability** – Semantic (dense) & keyword (sparse) retrieval, query expansion, Milvus-optimized retrieval, self-query retrieval, reranking, and auto-metadata filtering.
+✅ **Nemo Guardrails (v0.1.1)** – Uses vector similarity for question classification, reducing middleware time, preventing prompt injection attacks, and enforcing policy restrictions.
+✅ **Smart Summarization & Q&A Handling** – Supports direct QA over documents, metadata filtering, and map-reduce summarization for extracting insights across document chunks.
+✅ **Follow-up Question Generation** – Auto-generate follow-up questions to improve engagement with users.
+✅ **Custom PyFunc Hybrid-RAG MLflow Model** – Register, deploy, and serve the best model directly as an MLflow API for production-grade scenarios.
+✅ **Optimized Modules with Async Code** – Fully asynchronous support for high-performance execution on Python 3.11+.
+✅ **Speech-to-Text Model** – Supports local multilingual models, Hugging Face Inference API, and custom endpoints for speech-to-text conversion.
+✅ **Enhanced Logger Support** – Detailed success/error logs stored in log/ with timestamped logs for full traceability.
+✅ **Intelligent Modular Documentation** – Well-structured developer-friendly documentation with modular examples.
+✅ **CI/CD Support** – Seamless model integration & deployment with GitHub Actions for Build-Test-Deploy pipelines.
+✅ **Utility Functions for API/Streamlit apps** – Enables response storage on GitHub or AWS S3 for fine-tuning datasets and evaluation tracking.
+✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
 
+Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
 
-### Deployed FASTAPI:
-
-https://comparable-clarie-adsds-226b08fd.koyeb.app/
-
-### Deployed Streamlit app
-
-https://hybrid-search-rag-chatbot-sam.streamlit.app/
-
-## Approach: RAG Workflow Stratergy
-
-The approaches Followed for building RAG pipeline is discussed below
-
-#### 1. WebCrawling:
-
-The Website was a rich source of documents in everydomain like AI, Supply chain, Digital, Cybersecurity and Various Informational Blogs and Use-cases Discussed. Most of the websites have a common web interface and HTML Codebase which was suitable to built an automation using For Webscraping.
-1. Used Sitemap of Topics under ey_in domain.
-1. Analyse the Structure of the Websites.
-2. Extracted metadata required further for metadata filtering or Self-Query Retriever to post-retrieval for better performance i.e. Author name, related topics, pdf_links. Pdf links added because most of the blogs contains PDF for detailed information. in future content can be extracted and used for training of the chatbot for more information.
-3. Built an Automation to scrape and extract 2k websites using unstructuredURLLoader by langchain.
-
-#### 2. Semantic Chunking Techniques:
-
-After WeCrawling and Scraping data from the BaseURL. Applied various Techniques like RecursiveCharacterTextSplitter, Semantic Chunking, Statistical Chunking, Rolling Window Spltting using Semantic-routing.
-
-1. **RecursiveCharacterTextSplitter**: It splits the data by intelligently analysing the structure of the data based on splitting criterias. But Limitation is Not Calculate the semantic similarity between the context while splitting. Hence, Not better if we are unknown to the fact of Structure of Data.
-
-2. **Semantic Chunking**: Semantic Chunking splits the data in between the sentences. Based in the similarity between the sentences it combines the sentences and split the data where similarity drops to an extend. It works on embedding Similarity between the Sentences.
-
-- 2.1 **Statistical Chunking**: Better for English Text only. Instead of chunking text with a fixed chunk size, the semantic splitter adaptively picks the breakpoint in-between sentences using embedding similarity. This ensures that a "chunk" contains sentences that are semantically related to each other. For Semantic chunking used **jinaai/jina-embeddings-v2-base-en** (8K context length) by langchain FastEmbedding Module.
-
-- 2.2 **Rolling Window Spltting(Used in RAG)**: It uses a rolling window to consider splitting and applies semantic similarity while considering the sentence to combine and split. This Technique is more generic for any type of embeddding model, MAX_SPLI, MIN_SPLIT parameters makes it more customisable. Providing Chunks compatible to semantic chunking technique.
-
-#### 3. Metadata Chunking Method:
-
-Metadata Filtering is a way to limit the searches and increase chances of Information exact retrieval of chunks. For Metadata added Primary Source_links, author_names, related_topics, pdf_links.
-
-#### 4: Embedding Models:
-Tried Different types of embedding models by considering system Size and Best performance for english text on MTEB. Used Fastembedding() from langchain to get the embeddings best models available for local instead of API. Local Embedding Hosting saves the credits and Manage the latency during retrieval pipeline.
-
-Used Embedding model(Hybrid-search): SPARSE_EMBEDDING_MODEL: **Qdrant/bm42-all-minilm-l6-v2-attentions**, DENSE_EMBEDDING_MODEL: **jinaai/jina-embeddings-v2-base-en**.
-
-#### 5. Vector-Store: Zillinz hosted Milvus Store:
-
-Used Milvus to store the emebeddings, pymilvus module is more customisable for hybrid search and more scalable with Task Specific emebeddng indexes available for dense and sparse embeddings.
-
-#### 6. Query-Expansion Techniques: Self-Query retrieval for metadata & MultiQuery:
-
-Query Compression techniques are like Query breakdown, Query exapansion(Multiple Queries). Created a Customised MultiQuery Retrieval Class find on Chatbot-streamlit/src/utils/custom_utils.py. Defined my own prompt for Query formulations and breakdown.
-
-#### 7. Metadata-Filtering techniques:
-
-For Metadata Filtering **Used Self-Query Retrieval** which used LLM model to get the **filters and strctured query** relevant to Query by the User.
-
-#### 8. Retrieval: Hybrid-search:
-
-Used Hybrid Search By milvus, Stored Sparse and Dense vectors indexes inside the milvus collection. During retrieval used ANNSSearch to retrieve the Chunks.
-Applied Hybrid Search on Multiple queries generated by Query-expansion techniques + Metadata-filtering by Self-Query Over Sparse & Dense embedding search Limit 3 Each.
-Total for 5 queries using Sparse search generated: 15 chunks & using Dense search generated: 15 chunks Subtotal 30 Chunks Retrieved.
-
-#### 9. Reranking Techniques:
-
-Reranking technique is Important and Useful When applied Selfquery & Multi query generation technique to Re-rank the Chunks and Retrieve most Ranked with High similairty To consider and send as Context to LLM.
-
-Re-ranking Models: Used Flashrank defautt Local Reranking model:**ms-macro-tinybert-l-2-v2**. SPLADE/ColBert are most used reranking models and perform best.
-
-#### 10. LLM Model:
-
-LLM Model: Used gpt-4o model using AI/ML API. Best performing LLM model available. Used for Smooth Deployment to make it public
-
-## Results
-
-**Features**:
-- Post meta filtering
-- Hybrid-Search
-- Chat-history as 2
-- Sourcelinks in the Response
-- Latency(time require to process the Request) , Cost-per-request in the Response.
-
-## Code Structure
+#### 🚀 Get Started in Minutes
 
 ```
-    Chatbot-streamlit/
-        ├── css/
-        │ └── style.css
-        ├── src/
-        │ ├── logs/
-        │ ├── utils/
-        │ │ ├── init.py
-        │ │ ├── custom_utils.py
-        │ │ ├── get_insert_mongo_data.py
-        │ │ ├── logutils.py
-        │ │ └── mongo_init.py
-        │ ├── api.py
-        │ ├── main.py
-        │ ├── schema.py
-        │ └── test.py
-        ├── ui/
-        │ ├── sidebar.md
-        │ └── styles.md
-        ├── app.py
-        ├── requirements.txt
-        └── vercel.json
-    images/
-        ├── advance-rag-workflow.PNG
-    Milvus_features_pipeline/
-        ├── Milvus_Feature_Pipeline_Final.ipynb
-    Research_Notebooks/
-        ├── Milvus_Feature_Pipeline_sample.ipynb
-    Retriever_Pipeline/
-        ├── Retriever_Pipeline.ipynb
+    git clone <repo_url>
+    cd hybrid_rag
+    pip install poetry
+    poetry build
+    pip install dist/hybrid_rag-0.1.0-py3-none-any.whl
 ```
 
-## TechStack
+### 🔧 How to use Hybrid-RAG Package
+
+Configure retrieval models, embeddings, and other settings based on your needs to build your advanced RAG pipeline in no time!
+Now, forget about building Advance RAG from scratch —Hybrid RAG has got you covered! 🎯
+
+> Code is fully tested and working properly, please let me know or add your queries in the discussion if you faced any issue.
+
+#### Why a Python Package?
+
+- Motivation behind building this package is Noticed reduction in latency of responses because of shifting from Simple code to more Async Modular code.
+- It leverages easy configuration of any LLM model, parameters, retrieval embedding models to easily choose best hyperparameters for your data and application to setup.
+- Reduced time and efforts to experiment with different parameters, to improve performance!
+
+#### Does it Restricts with Less customization?
+
+- No, Everything is customizable, you can configure the parameters easily putting everything inside .env.example file..
+
+#### Am i able to Define my own flow for Hybrid-RAG steps?
+
+- Yes, Absolutely every module is a separate Class, which leverage separate calling and make it more flexible and customizable...
+- You can define different LLM models for different advance rag features like query expansion, self-query, rag chain, summary chain, followups etc.
+
+This repo also provides support for a **Streamlit application and RestAPI support using FastAPI package**, please find their Setup Stratergy inside its respective README.md file inside chat_streamlit_app/* and chat_restapi/* leverages hybrid-rag package.
+
+### Tech stack: 
 
 - Python
-- Web Scraping
-- MongoDB (Store API Secrets)
-- Generative AI
-- RAG Chatbot
-- Vector Search (Hybrid-Filtering)
 - Langchain
-- Semantic Router
+- Nemo Guardrails
+- RAGAS
+- Milvus
+- MongoDB
+- LLM
+- Semantic Search
+- Mlflow - Tracing + Custom model logging
+- Github Actions
+- Transformers
+- Hugging-Face
+- Docker
+- Streamlit
+- FastAPI
+- Asyncio
+- AWS ECS - AWS EKS -> FastAPI and Streamlit deployemnt as docker container
+- AWS Lambda - AWS API Gateway
+- Package Building - Poetry, Makefile, Pre-Commit Hooks
 
-## How to Run the Application
+### Latency Reduction Code Optimization Stratergies: 
 
-> Note: Code is builted and tested on python==^3.11.5
+- **Async packaging**: 
+- **Cache for embedding models & LLM**: 
+- **Generators**: 
+- **Remove extra assignment of objects**: 
+- **RunnableParallel**: 
+- **Metadata Filtering**: 
+- **Batch support**: 
+- **Mlflow params cluster update**: 
+- **delete the large outputs**: 
 
-This Application is Not yet deployed.. In-progress.
+### Problems Faced and Improvise RAG: 
 
-Follow Below Instruction for smooth and Errorless Application Run
-**Setup the Virtual-env**
+- **Hallucination in the responses** - multi-vector search by milvus does reranking Reranker() and context compression But by adding one more layer of reranking with a reranking model improvise the Context
+- **In consistent responses** - Update Prompt and make it more robust with some explicit instructions to follow made responses more consistent
+- **Knowledge chunk miss** - query expansion 
+- **Complex queries** - 
+- **Question type** - 
+- **prompt-injestion** - 
+- **No flow of conversation for personalised questions** - 
+- **Latency** - 
+- **speech to text capability** - 
+- **Streamlit App response latency** - 
+
+### Github Actions for CI/CD:
+
+Github actions to Build-Test-Deploy Python Module and Deploy the Streamlit + FastAPI application as Docker Image inside AWS ECS.
+
+Let's Understand, How you can Use this package to Built-Test-Deploy on your local environment.
+
+below are the steps you can follow to run the Build-Test-deployment locally your package
+ > Always run the package from your main-root folder i.e before hybrid_rag folder root directory
 
 ```
-    conda create --name ragapp python=3.11.5
-    conda activate ragapp
-
-    cd Chatbot-streamlit/
-    pip install -r requirements.txt
+1. git clone https://github.com/kolhesamiksha/Hybrid-Search-RAG.git
+1. cd Hybrid-Search-RAG
+1. python -m venv myvenv
+2. myvenv\Scripts\ativate
+3. apt-get update && apt-get install -y --no-install-recommends \
+    make build-essential && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    pip install poetry
+4. poetry install --with lint,dev,typing,codespell
+5. poetry build
+6. make install-precommit
+7. make run-precommit
+8. make test
 ```
 
-### Setup the API Backend
+Now for Deployment of Streamlit and FastAPI Application developed a stratergy i.e. Deploy Both applications inside a single container and expose their ports independently one inside another using supervisord.
 
-To Run the Application Locally First Run the FastAPI backend. Follow Below Instructions to Run the FastAPI:
-
-**Note**: To add your credentials inside the Mongodb Atlas cloud to connect the application Refere: Chatbot-streamlit/src/utils/mongo_init.py
-
-- Run the API
-    ```
-    #Export Envs: After insderting daa into mongodb atlas cloud
-    export CONNECTION_NAME=<chatbot-connection-name>
-
-    #Now Run the FastAPI using below command and Relative Path as Chatbot-streamlit/
-    uvicorn src.main:app --reload
-
-Now /predict Endpoint of FastAPI is getting exposed, which can be used in out Streamlit app to do Q&A over RAG.
-
-- Check the API working in swagger
-
-```
-    Click on the link e.g http://127.0.0.1:8000/docs to check the swagger
-```
-
-### Setup the Streamlit UI
-
-To Run the Streamlit Application Locally Follow below Instructions to Run the App
-
-```
-    streamlit run app.py
-```
-
-This Will open a streamlit application where you can ask your questions and get the responses via API you exposed.
+- Dockerfile - Created a flow to Expose a fastapi and then fruther added that inside streamlit application.
 
 ## Sample Output
+
+I've builted a Chatbot over EY_IN Blogs data and test the end to end streamlit application builted using FastAPI which uses Hybrid-RAG Python package:)
+
 ![chatbot_img_5](https://github.com/user-attachments/assets/7f407d47-7ea6-492a-82bf-ff8d1b69b08c)
 ![chatbot_img_6](https://github.com/user-attachments/assets/ba6b6639-aef7-45f8-81b5-e7b9af6cf3e5)
 ![chatbot_img_7](https://github.com/user-attachments/assets/e23b4ede-9e60-4677-9589-d2702a15c837)
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
-📫 Get in Touch
+📫 Developer contact:
 Happy to Connect!! [Samiksha Kolhe](https://www.linkedin.com/in/samiksha-kolhe25701/)
