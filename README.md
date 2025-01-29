@@ -4,22 +4,22 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 
 ### 🔥 Why Hybrid RAG?
 
-✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
-✅ **Experiment Tracking & Tracing with MLflow** – Log experiments, parameters, and traces for every LLM and retrieval step, ensuring efficient latency & cost tracking.
-✅ **RAG Evaluation with Ragas** – Measure performance using faithfulness, answer relevance, and context precision, with future support for MLflow evaluation.
-✅ **Cost Monitoring** – Keep track of API usage by setting LLM pricing inside API parameters to optimize expenses.
-✅ **Hybrid Search Capability** – Semantic (dense) & keyword (sparse) retrieval, query expansion, Milvus-optimized retrieval, self-query retrieval, reranking, and auto-metadata filtering.
-✅ **Nemo Guardrails (v0.1.1)** – Uses vector similarity for question classification, reducing middleware time, preventing prompt injection attacks, and enforcing policy restrictions.
-✅ **Smart Summarization & Q&A Handling** – Supports direct QA over documents, metadata filtering, and map-reduce summarization for extracting insights across document chunks.
-✅ **Follow-up Question Generation** – Auto-generate follow-up questions to improve engagement with users.
-✅ **Custom PyFunc Hybrid-RAG MLflow Model** – Register, deploy, and serve the best model directly as an MLflow API for production-grade scenarios.
-✅ **Optimized Modules with Async Code** – Fully asynchronous support for high-performance execution on Python 3.11+.
-✅ **Speech-to-Text Model** – Supports local multilingual models, Hugging Face Inference API, and custom endpoints for speech-to-text conversion.
-✅ **Enhanced Logger Support** – Detailed success/error logs stored in log/ with timestamped logs for full traceability.
-✅ **Intelligent Modular Documentation** – Well-structured developer-friendly documentation with modular examples.
-✅ **CI/CD Support** – Seamless model integration & deployment with GitHub Actions for Build-Test-Deploy pipelines.
-✅ **Utility Functions for API/Streamlit apps** – Enables response storage on GitHub or AWS S3 for fine-tuning datasets and evaluation tracking.
-✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
+- ✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
+- ✅ **Experiment Tracking & Tracing with MLflow** – Log experiments, parameters, and traces for every LLM and retrieval step, ensuring efficient latency & cost tracking.
+- ✅ **RAG Evaluation with Ragas** – Measure performance using faithfulness, answer relevance, and context precision, with future support for MLflow evaluation.
+- ✅ **Cost Monitoring** – Keep track of API usage by setting LLM pricing inside API parameters to optimize expenses.
+- ✅ **Hybrid Search Capability** – Semantic (dense) & keyword (sparse) retrieval, query expansion, Milvus-optimized retrieval, self-query retrieval, reranking, and auto-metadata filtering.
+- ✅ **Nemo Guardrails (v0.1.1)** – Uses vector similarity for question classification, reducing middleware time, preventing prompt injection attacks, and enforcing policy restrictions.
+- ✅ **Smart Summarization & Q&A Handling** – Supports direct QA over documents, metadata filtering, and map-reduce summarization for extracting insights across document chunks.
+- ✅ **Follow-up Question Generation** – Auto-generate follow-up questions to improve engagement with users.
+- ✅ **Custom PyFunc Hybrid-RAG MLflow Model** – Register, deploy, and serve the best model directly as an MLflow API for production-grade scenarios.
+- ✅ **Optimized Modules with Async Code** – Fully asynchronous support for high-performance execution on Python 3.11+.
+- ✅ **Speech-to-Text Model** – Supports local multilingual models, Hugging Face Inference API, and custom endpoints for speech-to-text conversion.
+- ✅ **Enhanced Logger Support** – Detailed success/error logs stored in log/ with timestamped logs for full traceability.
+- ✅ **Intelligent Modular Documentation** – Well-structured developer-friendly documentation with modular examples.
+- ✅ **CI/CD Support** – Seamless model integration & deployment with GitHub Actions for Build-Test-Deploy pipelines.
+- ✅ **Utility Functions for API/Streamlit apps** – Enables response storage on GitHub or AWS S3 for fine-tuning datasets and evaluation tracking.
+- ✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
 
 Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
 
