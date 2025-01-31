@@ -115,6 +115,7 @@ This repository also includes:
 - **Performance Tracking** - mlflow performance tracking can be developed
 - **Streamlit App response latency** - I compared the streamlit application, with Using Hybrid-RAG package, Mlflow logged model as URI, Using FastAPI for request response.. with Using FastAPI seems less latency in response and less time required. Please see the results below
 
+![image](https://github.com/user-attachments/assets/d81298bb-a261-4ef6-8c29-8a2b15f0726d)
 
 ### Latency Reduction Code Optimization Stratergies: 
 
