@@ -189,6 +189,9 @@ I've builted a Chatbot over EY_IN Blogs data and test the end to end streamlit a
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
 ### 📫 Developer Contact:
+
+**Samiksha Kolhe:)**
+
 I’d love to connect and collaborate! Feel free to reach out. 🚀
 
 🔗 [LinkedIn](https://www.linkedin.com/in/samiksha-kolhe25701/)
