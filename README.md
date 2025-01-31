@@ -4,8 +4,10 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 
 ![image](https://github.com/user-attachments/assets/2e48c31c-0a13-4cc9-8df8-e66e2fe10a50)
 
-### 🔥 Why Hybrid RAG?
+> If you wanted in-depth understanding of Advance RAG, Code Packaging and best practices to built efficient and scalable RAG, I'll be writing the blogs on each and every concept used in this project and how one can also start building such packaged systems.. Please Subscribe or follow my blogs community, to read them.. link provided at the End!!
 
+### 🔥 Why Hybrid RAG?
+---
 
 - ✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
 - ✅ **Experiment Tracking & Tracing with MLflow** – Log experiments, parameters, and traces for every LLM and retrieval step, ensuring efficient latency & cost tracking.
@@ -102,6 +104,7 @@ This repository also includes:
 
 
 ### Problems Faced and Improvise RAG: 
+---
 
 - **Hallucination in the responses** - multi-vector search by milvus does reranking Reranker() and context compression But by adding one more layer of reranking with a reranking model improvise the Context.
 - **In consistent responses** - Update Prompt and make it more robust with some explicit instructions to follow made responses more consistent
@@ -118,6 +121,7 @@ This repository also includes:
 ![image](https://github.com/user-attachments/assets/d81298bb-a261-4ef6-8c29-8a2b15f0726d)
 
 ### Latency Reduction Code Optimization Stratergies: 
+---
 
 - **Async packaging**: As Code is more API bound, Waiting time for a particular module was blocking other independent functions, made a lot of waiting and in-efficient CPU utilizatio - 30% time reduction.
 - **Cache for embedding models & LLM**: Used Local Embedding models mostly used for hybrid-searching, these models used to get loaded for each query searching, causes increased latency and memory consumption.. with lru_cache mechanism significantly reduce latency and reduce the processing time.
@@ -133,6 +137,7 @@ This repository also includes:
 
 
 ### Github Actions for CI/CD:
+---
 
 Github actions to Build-Test-Deploy Python Module and Deploy the Streamlit + FastAPI application as Docker Image inside AWS ECS.
 
@@ -172,4 +177,7 @@ I've builted a Chatbot over EY_IN Blogs data and test the end to end streamlit a
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
 📫 Developer contact:
-Happy to Connect!! [Samiksha Kolhe](https://www.linkedin.com/in/samiksha-kolhe25701/)
+Happy to Connect and Collaborate!! [Linkedin](https://www.linkedin.com/in/samiksha-kolhe25701/),
+If you likes this project, please Give a hit on Star⭐. If you want to keep updated with more such projects and to stay updated with latest AI-tech trends,
+Then Subscribe to my blogs community [Tackebakers]()
+
