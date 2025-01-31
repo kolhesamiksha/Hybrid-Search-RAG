@@ -124,6 +124,10 @@ This repository also includes:
 
 ![image](https://github.com/user-attachments/assets/8e2636a1-5360-40d7-bcfd-ce14e6b42eb6)
 
+### Mlflow logged Metrices and Params
+
+![image](https://github.com/user-attachments/assets/5306c077-d5de-4c19-89b8-cd1be4483dc2)
+
 
 ### Latency Reduction Code Optimization Stratergies: 
 ---
