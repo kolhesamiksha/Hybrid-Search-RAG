@@ -2,6 +2,8 @@
 
 Build production-ready RAG solutions effortlessly with just a few lines of code! Hybrid RAG is designed to streamline your Retrieval-Augmented Generation (RAG) pipeline, making it easy to track, evaluate, and optimize your system for real-world applications, Explicit Asyncio support!!!!
 
+![image](https://github.com/user-attachments/assets/2e48c31c-0a13-4cc9-8df8-e66e2fe10a50)
+
 ### 🔥 Why Hybrid RAG?
 
 - ✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
