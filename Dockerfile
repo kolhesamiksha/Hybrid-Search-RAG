@@ -8,6 +8,7 @@ WORKDIR /build
 
 # Install system dependencies for Poetry
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-get install ffmpeg -y \
     make build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     pip install poetry
@@ -21,7 +22,9 @@ COPY Makefile Makefile
 COPY poetry.toml poetry.toml
 COPY pyproject.toml pyproject.toml
 
-# Optional: If No workflows/cicd setup for build test and deploy.. then use make install, make install-precommit, make run-precommit, make test, make clean etc
+# Optional: If No workflows/cicd setup for build test and deploy.. then use make install, make install-precommit, make run-precommit, make test, make clean commands
+# to test your code locally.
+
 # Build the wheel file using the Makefile
 RUN make build
 
@@ -38,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /build/dist/*.whl .
 
-# Install the wheel file && remove the wheel after installation
+# Install the wheel file && remove the wheel after installation, to save the memory space of virtual space of 
 RUN pip install *.whl && rm -rf *.whl
 
 ##################
