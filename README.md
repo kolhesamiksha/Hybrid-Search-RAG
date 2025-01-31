@@ -60,6 +60,8 @@ Now, forget about building Advance RAG from scratch —Hybrid RAG has got you co
 ### 🔍 Is Customization Limited?
 
 - Not at all! Everything is configurable. You can easily adjust the parameters using the .env.example file.
+- Proper comments are provided inside .env.example file to find and get every configurations..
+- Start Build and deploy your usecase without caring about the internal techstack with just few lines of code!!!
 
 
 ### 🏗️ Can I Define My Own Hybrid-RAG Workflow?
@@ -104,7 +106,7 @@ This repository also includes:
 - AWS Lambda - AWS API Gateway -> FastAPI deployment over AWS.
 - Package Building - Poetry, Makefile, Pre-Commit Hooks
 
-### Problems Faced and Improvise RAG: 
+### Problems Faced and their Solutions: 
 ---
 
 - **Hallucination in the responses** - multi-vector search by milvus does reranking Reranker() and context compression But by adding one more layer of reranking with a reranking model improvise the Context.
@@ -116,7 +118,7 @@ This repository also includes:
 - **Prompt-Injestion** - For Production Usecase or public chatbots which uses LLM's, people faced issues of jailbreaking and prompt-injestion.. Hence to add a Security layer to block hitting LLM and Hybrid-RAG system, develope a stratergy using Nemo Guardrails (avaialble in v0.1.1).
 - **Latency** - This is the Major issue i faced during the developement of complex systems, everytime when you hit the question the hybrid-rag with all local embedding downloading and llm api calls happen in the backend, hence Implemented caching for Local sparse-dense and llm calls, async codebase helps reducing latency and blocking for awaited independent tasks.
 - **Speech to text capability** - Speech to text model for real-time use of chatbot over voice input questions..
-- **Performance Tracking** - mlflow performance tracking can be developed
+- **Performance Tracking** - performance tracking by configuring parameters was harder to track and trace the effect of approaches used to reduce chain times of different components of hybrid-rag.
 - **Streamlit App response latency** - I compared the streamlit application, with Using Hybrid-RAG package, Mlflow logged model as URI, Using FastAPI for request response.. with Using FastAPI seems less latency in response and less time required. Please see the results below
 
 ![image](https://github.com/user-attachments/assets/d81298bb-a261-4ef6-8c29-8a2b15f0726d)
