@@ -4,6 +4,7 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 
 ![image](https://github.com/user-attachments/assets/2e48c31c-0a13-4cc9-8df8-e66e2fe10a50)
 
+
 > If you wanted in-depth understanding of Advance RAG, Code Packaging and best practices to built efficient and scalable RAG, I'll be writing the blogs on each and every concept used in this project and how one can also start building such packaged systems.. Please Subscribe or follow my blogs community, to read them.. link provided at the End!!
 
 ### 🔥 Why Hybrid RAG?
@@ -27,7 +28,7 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 - ✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
 
 Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
-
+ 
 ---
 
 ### 🚀 Get Started in Minutes
@@ -47,6 +48,7 @@ Now, forget about building Advance RAG from scratch —Hybrid RAG has got you co
 
 > Code is fully tested and working properly, please let me know or add your queries in the discussion if you faced any issue.
 
+**Please find the sample examples to use this package for your usecase**
 
 ### 🛠️ Why a Python Package?
 
@@ -102,7 +104,6 @@ This repository also includes:
 - AWS Lambda - AWS API Gateway -> FastAPI deployment over AWS.
 - Package Building - Poetry, Makefile, Pre-Commit Hooks
 
-
 ### Problems Faced and Improvise RAG: 
 ---
 
@@ -122,9 +123,13 @@ This repository also includes:
 
 ### Mlflow Traceability
 
+- You can see full trace of your RAG steps each and every step where your llm model is getting used...
+
 ![image](https://github.com/user-attachments/assets/8e2636a1-5360-40d7-bcfd-ce14e6b42eb6)
 
 ### Mlflow logged Metrices and Params
+
+- You get all parameters relevant to track your experiements and register best model logged 
 
 ![image](https://github.com/user-attachments/assets/5306c077-d5de-4c19-89b8-cd1be4483dc2)
 
@@ -138,7 +143,6 @@ This repository also includes:
 - **Remove extra assignment of objects**: remove extra assignement of variables, reduces the cyclic variables.. as python doesnot remove such assignments during garbage collection, this helps code looks more structures, less complex and more comprehensive.
 - **RunnableParallel**: Implementing runnable parallel, Noticed 20% reduction in chain-time instead of passing everything sequentially.
 - **Metadata Filtering**: Metadata filtering reduces efforts for searching of data from entire database to only a subset of data, which improves accuracy, correct chunks in the context and indirectly reduces hallucinations, helps mostly in summarization case study
-- **Batch support**: Implemented batch processing
 - **Bathc Mlflow params**: previously logging every parameter separately, consumes time and compute to first serialise those params as per mlflow utf-8 support & contact backend mlflow database for storage.. by batching, at a single mlflow call and validation reduced cpu preemption and reduce the memory consumption.
 - **Delete the large outputs**: This reduced Significant memory consumption as per profiler report.. notices 40% reduction in memory consumpion. 
 
@@ -172,7 +176,7 @@ below are the steps you can follow to run the Build-Test-deployment locally your
 
 Now for Deployment of Streamlit and FastAPI Application developed a stratergy i.e. Deploy Both applications inside a single container and expose their ports independently one inside another using supervisord.
 
-- Dockerfile - Created a flow to Expose a fastapi and then fruther added that inside streamlit application.
+- Dockerfile - Created a flow to Expose a fastapi and then further added that inside the streamlit application.
 
 
 ## Sample Output
@@ -194,4 +198,4 @@ I’d love to connect and collaborate! Feel free to reach out. 🚀
 If you found this project helpful, don’t forget to star ⭐ the repository and fork it for future updates! 🚀
 
 Stay ahead in AI and keep up with the latest tech trends by subscribing to my blog community:
-📝 [Tackebakers](https://teckbakers.hashnode.dev/) — Your hub for cutting-edge AI insights and innovations!
+📝 [Teckbakers](https://teckbakers.hashnode.dev/) — Your hub for cutting-edge AI insights and innovations!
