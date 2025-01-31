@@ -295,7 +295,7 @@ class RAGChatbot:
         #     | llm_model
         # )
 
-        ########### Rnnable Parallel Chaining reduces the chaining time by 30% ###############
+        ########### Rnnable Parallel Chaining reduces the chaining time by 20% ###############
         chain = (
             RunnableParallel(
                 {
@@ -559,7 +559,7 @@ class RAGChatbot:
                             "reranked_docs_count": len(reranked_docs),
                             "formatted_context": formatted_context,
                         })
-
+                        self.logger.info(f"Formatted Context: {formatted_context}")
                         del reranker_to_mlflow
 
                     with mlflow.start_span(name="evaluate_response") as evaluate_span:
@@ -567,6 +567,7 @@ class RAGChatbot:
                         response, token_usage = await self._chatbot(
                             question, formatted_context, history
                         )
+                        print(token_usage)
                         response = response.encode('utf-8', 'ignore').decode('utf-8')
                         evaluate_span.set_attributes({
                             "Chatbot Response": response,
