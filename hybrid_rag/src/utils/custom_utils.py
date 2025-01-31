@@ -161,7 +161,7 @@ class CustomMultiQueryRetriever(MultiQueryRetriever):
         template="""You are an AI language model assistant. Your task is to break down question if possible to retrieve
        relevant documents from a vector database. By generating 5 break down questions of user question, your goal is to
        help the user overcome some of the limitations of distance-based similarity search. Provide these multi step questions
-       separated by newlines. Only break down question if poosible otherwise return the original question.\n Original Question: {question}
+       separated by newlines. Only break down question if poosible otherwise return the original question.\n IMP: Strictly provide only 5 questions, no extra comments just questions separated by "," in a list \nOriginal Question: {question}
         """,
     )
 
