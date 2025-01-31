@@ -4,6 +4,7 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 
 ### 🔥 Why Hybrid RAG?
 
+
 - ✅ **Ingestion Pipeline** - End to End support to insert your vector data inside Milvus VectorDB. find the pipeline inside notebooks/ingestion_pipeline/Python_Feature_Pipeline.ipynb. In v0.1.1 support for kubeflow, pyspark pipelines to speed up Ingestion pipelines.
 - ✅ **Experiment Tracking & Tracing with MLflow** – Log experiments, parameters, and traces for every LLM and retrieval step, ensuring efficient latency & cost tracking.
 - ✅ **RAG Evaluation with Ragas** – Measure performance using faithfulness, answer relevance, and context precision, with future support for MLflow evaluation.
@@ -23,6 +24,8 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 
 Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
 
+---
+
 ### 🚀 Get Started in Minutes
 
 ```
@@ -40,21 +43,25 @@ Now, forget about building Advance RAG from scratch —Hybrid RAG has got you co
 
 > Code is fully tested and working properly, please let me know or add your queries in the discussion if you faced any issue.
 
+
 ### 🛠️ Why a Python Package?
 
 - The motivation behind creating this package was to reduce response latency by transitioning from simple code to an asynchronous, modular approach.
 - It allows seamless configuration of LLM models, retrieval embeddings, and parameters, enabling you to fine-tune hyperparameters for your specific data and application.
 - Saves time and effort in experimenting with different settings to enhance performance.
 
+
 ### 🔍 Is Customization Limited?
 
 - Not at all! Everything is configurable. You can easily adjust the parameters using the .env.example file.
+
 
 ### 🏗️ Can I Define My Own Hybrid-RAG Workflow?
 
 - Absolutely! Each module is designed as a separate class, making it highly flexible and customizable.
 - You can assign different LLM models for various advanced RAG functionalities such as query expansion, self-query, RAG chains, summary chains, follow-ups, and more.
 - Every Parameter and component is configurable.
+
 
 ### 📌 Additional Features
 This repository also includes:
@@ -66,6 +73,7 @@ This repository also includes:
 
 > NOTE: You can find setup instructions for both inside their respective README.md files in `chat_streamlit_app/` and `chat_restapi/`, all powered by the Hybrid-RAG package
 
+---
 ### Tech stack: 
 
 - Python
@@ -89,6 +97,7 @@ This repository also includes:
 - AWS Lambda - AWS API Gateway -> FastAPI deployment over AWS.
 - Package Building - Poetry, Makefile, Pre-Commit Hooks
 
+
 ### Problems Faced and Improvise RAG: 
 
 - **Hallucination in the responses** - multi-vector search by milvus does reranking Reranker() and context compression But by adding one more layer of reranking with a reranking model improvise the Context.
@@ -103,6 +112,7 @@ This repository also includes:
 - **Performance Tracking** - mlflow performance tracking can be developed
 - **Streamlit App response latency** - I compared the streamlit application, with Using Hybrid-RAG package, Mlflow logged model as URI, Using FastAPI for request response.. with Using FastAPI seems less latency in response and less time required. Please see the results below
 
+
 ### Latency Reduction Code Optimization Stratergies: 
 
 - **Async packaging**: As Code is more API bound, Waiting time for a particular module was blocking other independent functions, made a lot of waiting and in-efficient CPU utilizatio - 30% time reduction.
@@ -116,6 +126,7 @@ This repository also includes:
 - **Delete the large outputs**: This reduced Significant memory consumption as per profiler report.. notices 40% reduction in memory consumpion. 
 
 `constantly working on implementing more practices to reduce memory consumption, reduce latency and improvise CPU utilization`
+
 
 ### Github Actions for CI/CD:
 
@@ -145,6 +156,7 @@ below are the steps you can follow to run the Build-Test-deployment locally your
 Now for Deployment of Streamlit and FastAPI Application developed a stratergy i.e. Deploy Both applications inside a single container and expose their ports independently one inside another using supervisord.
 
 - Dockerfile - Created a flow to Expose a fastapi and then fruther added that inside streamlit application.
+
 
 ## Sample Output
 
