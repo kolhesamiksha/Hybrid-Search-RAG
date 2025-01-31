@@ -171,6 +171,7 @@ class MilvusHybridSearch:
         for _, hits in enumerate(res):
             for hit in hits:
                 page_content = hit.entity.get("text")
+                page_content = page_content.replace("\u2192", "")
                 metadata = {attr: hit.entity.get(attr) for attr in self.metadata_attributes_lst}
                 doc_chunk = Document(page_content=page_content, metadata=metadata)
                 output.append(doc_chunk)

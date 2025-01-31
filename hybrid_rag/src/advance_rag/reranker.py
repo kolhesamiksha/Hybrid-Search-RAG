@@ -59,7 +59,7 @@ class DocumentReranker:
             run_id="reranker_run", handlers=[], inheritable_handlers={}
         )
         self.batch_size: int = 30
-
+    
     async def milvus_store_docs_to_rerank(
         self, docs_to_rerank, search_params: dict
     ) -> Milvus:
