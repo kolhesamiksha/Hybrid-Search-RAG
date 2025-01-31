@@ -25,7 +25,6 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 - ✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
 
 Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
-
 ---
 
 ### 🚀 Get Started in Minutes
@@ -74,8 +73,8 @@ This repository also includes:
 **Knowledge Base**: Used EY-India Blogs as a Usecase to Build the Above system and used as a reference to build the package and streamlit application..
 
 > NOTE: You can find setup instructions for both inside their respective README.md files in `chat_streamlit_app/` and `chat_restapi/`, all powered by the Hybrid-RAG package
-
 ---
+
 ### Tech stack: 
 
 - Python
