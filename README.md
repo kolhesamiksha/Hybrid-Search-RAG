@@ -120,6 +120,8 @@ This repository also includes:
 
 ![image](https://github.com/user-attachments/assets/d81298bb-a261-4ef6-8c29-8a2b15f0726d)
 
+### Mlflow Traceability
+
 ![image](https://github.com/user-attachments/assets/8e2636a1-5360-40d7-bcfd-ce14e6b42eb6)
 
 
@@ -137,7 +139,6 @@ This repository also includes:
 - **Delete the large outputs**: This reduced Significant memory consumption as per profiler report.. notices 40% reduction in memory consumpion. 
 
 `constantly working on implementing more practices to reduce memory consumption, reduce latency and improvise CPU utilization`
-
 
 ### Github Actions for CI/CD:
 ---
