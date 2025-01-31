@@ -176,8 +176,14 @@ I've builted a Chatbot over EY_IN Blogs data and test the end to end streamlit a
 ![chatbot_img_7](https://github.com/user-attachments/assets/e23b4ede-9e60-4677-9589-d2702a15c837)
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
-📫 Developer contact:
-Happy to Connect and Collaborate!! [Linkedin](https://www.linkedin.com/in/samiksha-kolhe25701/),
-If you likes this project, please Give a hit on Star⭐. If you want to keep updated with more such projects and to stay updated with latest AI-tech trends,
-Then Subscribe to my blogs community [Tackebakers]()
+### 📫 Developer Contact:
+I’d love to connect and collaborate! Feel free to reach out. 🚀
 
+🔗 [LinkedIn](https://www.linkedin.com/in/samiksha-kolhe25701/)
+⭐ [GitHub](https://github.com/kolhesamiksha)
+📊 [Kaggle](https://www.kaggle.com/samikshakolhe)
+
+If you found this project helpful, don’t forget to star ⭐ the repository and fork it for future updates! 🚀
+
+Stay ahead in AI and keep up with the latest tech trends by subscribing to my blog community:
+📝 [Tackebakers](https://teckbakers.hashnode.dev/) — Your hub for cutting-edge AI insights and innovations!
