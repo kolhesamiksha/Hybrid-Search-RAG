@@ -218,7 +218,7 @@ I'll provide the details and best practices to built the image in future, Please
 
 ## Sample Streamlit Application Output
 
-I've builted a Chatbot over EY-India Blogs data Scraped from their Website(Scraping was allowed by their robots.txt) and test the end to end streamlit application builted usinf streamlit as froentend and Request-response using a RestAPI builted using FastAPI which uses Hybrid-RAG as Python package:)
+I've builted a Chatbot over **EY-India Blogs data** Scraped from their Website(Scraping was allowed by their robots.txt) and test the end to end streamlit application builted using streamlit as frontend and Request-response using a RestAPI builted using FastAPI which uses Hybrid-RAG as Python package:)
 
 ![chatbot_img_5](https://github.com/user-attachments/assets/7f407d47-7ea6-492a-82bf-ff8d1b69b08c)
 ![chatbot_img_6](https://github.com/user-attachments/assets/ba6b6639-aef7-45f8-81b5-e7b9af6cf3e5)
