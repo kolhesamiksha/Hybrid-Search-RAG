@@ -5,7 +5,8 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 ![image](https://github.com/user-attachments/assets/2e48c31c-0a13-4cc9-8df8-e66e2fe10a50)
 
 
-> If you wanted in-depth understanding of Advance RAG, Code Packaging and best practices to built efficient and scalable RAG, I'll be writing the blogs on each and every concept used in this project and how one can also start building such packaged systems.. Please Subscribe or follow my blogs community, to read them.. link provided at the End!!
+<span style="background-color: yellow;"> If you wanted in-depth understanding of Advance RAG, Code Packaging and best practices to built efficient and scalable RAG, I'll be writing the blogs on each and every concept used in this project and how one can also start building such packaged systems.. Please Subscribe or follow my blogs community, to read them.. link provided at the End!!</span>.
+
 
 ### 🔥 Why Hybrid RAG?
 ---
@@ -15,7 +16,7 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 - ✅ **RAG Evaluation with Ragas** – Measure performance using faithfulness, answer relevance, and context precision, with future support for MLflow evaluation.
 - ✅ **Cost Monitoring** – Keep track of API usage by setting LLM pricing inside API parameters to optimize expenses.
 - ✅ **Hybrid Search Capability** – Semantic (dense) & keyword (sparse) retrieval, query expansion, Milvus-optimized retrieval, self-query retrieval, reranking, and auto-metadata filtering.
-- ✅ **Nemo Guardrails (v0.1.1)** – Uses vector similarity for question classification, reducing middleware time, preventing prompt injection attacks, and enforcing policy restrictions.
+- ✅ **Nemo Guardrails (v0.1.1)** – Uses vector similarity for question classification, reducing middleware time, preventing prompt injection attacks, and enforcing policy restrictions. available in v0.1.1
 - ✅ **Smart Summarization & Q&A Handling** – Supports direct QA over documents, metadata filtering, and map-reduce summarization for extracting insights across document chunks.
 - ✅ **Follow-up Question Generation** – Auto-generate follow-up questions to improve engagement with users.
 - ✅ **Custom PyFunc Hybrid-RAG MLflow Model** – Register, deploy, and serve the best model directly as an MLflow API for production-grade scenarios.
@@ -28,18 +29,19 @@ Build production-ready RAG solutions effortlessly with just a few lines of code!
 - ✅ **Poetry, Makefile & Pre-commit Hooks** – Ensures best practices with pre-commit checks, packaging support, and agile development workflows.
 
 Please Find detailed information about the strategy and usage of each module inside its respective README.md file. Each module has its own documentation to guide you through its functionality and implementation.
- 
+
 ---
 
 ### 🚀 Get Started in Minutes
 
 ```
     git clone https://github.com/kolhesamiksha/Hybrid-Search-RAG
-    cd hybrid_rag
+    cd Hybrid-Search-RAG
     pip install poetry
     poetry build
     pip install dist/hybrid_rag-0.1.0-py3-none-any.whl
 ```
+**Note: I'll provide the blog links for each of the features discussed in this repo in future, Stay tuned and fork the repository for future updates...**
 
 ### 🔧 How to use Hybrid-RAG Package
 
@@ -48,7 +50,7 @@ Now, forget about building Advance RAG from scratch —Hybrid RAG has got you co
 
 > Code is fully tested and working properly, please let me know or add your queries in the discussion if you faced any issue.
 
-**Please find the sample examples to use this package for your usecase**
+**Please find the sample examples in examples/* to use this package for your usecase**
 
 ### 🛠️ Why a Python Package?
 
@@ -110,15 +112,25 @@ This repository also includes:
 ---
 
 - **Hallucination in the responses** - multi-vector search by milvus does reranking Reranker() and context compression But by adding one more layer of reranking with a reranking model improvise the Context.
-- **In consistent responses** - Update Prompt and make it more robust with some explicit instructions to follow made responses more consistent
+
+- **In consistent responses** - Update Prompt and make it more robust with some explicit instructions to follow made responses more consistent.
+
 - **Knowledge chunk miss** - query expansion enanles to create relevant questions based on the current question, which helps to improve the Context and chances of retrieving correct document and pass during Context preparation.
+
 - **Complex queries** - At human level, as thinking differs person to person so as the complexity of queries.. Hence developed a Custom Query Expansion technique which caters such different types of questions.
+
 - **Classify Questions** - From the market research and own understanding The data which i take reference from is of ey_in blogs data scraped from their allowed sitemaps. in the current version developed 2 systems/approaches to cater 2 types of queries those are Blogs summarization questions and Normal blogs questions..
-- **No flow of conversation for personalised questions** - During trying of the chatbot, i noticed people also asked normal personal level questions or questions which are not related to the KnowldgeBase, For normal questions there should be flow define and not requires RAG to be get triggered everytime. 
+
+- **No flow of conversation for personalised questions** - During trying of the chatbot, i noticed people also asked normal personal level questions or questions which are not related to the KnowldgeBase, For normal questions there should be flow define and not requires RAG to be get triggered everytime.
+
 - **Prompt-Injestion** - For Production Usecase or public chatbots which uses LLM's, people faced issues of jailbreaking and prompt-injestion.. Hence to add a Security layer to block hitting LLM and Hybrid-RAG system, develope a stratergy using Nemo Guardrails (avaialble in v0.1.1).
+
 - **Latency** - This is the Major issue i faced during the developement of complex systems, everytime when you hit the question the hybrid-rag with all local embedding downloading and llm api calls happen in the backend, hence Implemented caching for Local sparse-dense and llm calls, async codebase helps reducing latency and blocking for awaited independent tasks.
+
 - **Speech to text capability** - Speech to text model for real-time use of chatbot over voice input questions..
+
 - **Performance Tracking** - performance tracking by configuring parameters was harder to track and trace the effect of approaches used to reduce chain times of different components of hybrid-rag.
+
 - **Streamlit App response latency** - I compared the streamlit application, with Using Hybrid-RAG package, Mlflow logged model as URI, Using FastAPI for request response.. with Using FastAPI seems less latency in response and less time required. Please see the results below
 
 ![image](https://github.com/user-attachments/assets/d81298bb-a261-4ef6-8c29-8a2b15f0726d)
@@ -131,7 +143,9 @@ This repository also includes:
 
 ### Mlflow logged Metrices and Params
 
-- You get all parameters relevant to track your experiements and register best model logged 
+- You can get all relevant parameters to track your experiements, accuracy and register the Best Model...
+
+> Note: To register the best model after experimentation, please run `python examples/custom_mlflow_rag_model_logging.py`, this will logged the RAG model and you can serve that as API for your production usecase.
 
 ![image](https://github.com/user-attachments/assets/5306c077-d5de-4c19-89b8-cd1be4483dc2)
 
@@ -139,58 +153,79 @@ This repository also includes:
 ### Latency Reduction Code Optimization Stratergies: 
 ---
 
-- **Async packaging**: As Code is more API bound, Waiting time for a particular module was blocking other independent functions, made a lot of waiting and in-efficient CPU utilizatio - 30% time reduction.
-- **Cache for embedding models & LLM**: Used Local Embedding models mostly used for hybrid-searching, these models used to get loaded for each query searching, causes increased latency and memory consumption.. with lru_cache mechanism significantly reduce latency and reduce the processing time.
-- **Generators**: Generator helps to reduce memory consumption, using memory_profiler adding generators mainly as a list comprehensions, storing larger data i.e. data retrieved and combined from all expanded queries before sending to reranker + summarisation casde study which stores all documents chunks retrieved for summarization.. Reduced memory consmuption upto 20%. 
-- **Remove extra assignment of objects**: remove extra assignement of variables, reduces the cyclic variables.. as python doesnot remove such assignments during garbage collection, this helps code looks more structures, less complex and more comprehensive.
-- **RunnableParallel**: Implementing runnable parallel, Noticed 20% reduction in chain-time instead of passing everything sequentially.
-- **Metadata Filtering**: Metadata filtering reduces efforts for searching of data from entire database to only a subset of data, which improves accuracy, correct chunks in the context and indirectly reduces hallucinations, helps mostly in summarization case study
-- **Bathc Mlflow params**: previously logging every parameter separately, consumes time and compute to first serialise those params as per mlflow utf-8 support & contact backend mlflow database for storage.. by batching, at a single mlflow call and validation reduced cpu preemption and reduce the memory consumption.
-- **Delete the large outputs**: This reduced Significant memory consumption as per profiler report.. notices 40% reduction in memory consumpion. 
+- **Asynchronous Codebase**: Since the code is heavily API-driven, waiting times for specific modules were blocking other independent functions, leading to inefficiencies in CPU utilization. Implementing asynchronous execution resulted in a 30% reduction in processing time.
+
+- **Caching for Embedding Models & LLM**: Previously, local embedding models—primarily used for hybrid searching—were reloaded for each query, increasing both latency and memory consumption. By implementing an LRU cache mechanism, we significantly reduced query latency and optimized processing time.
+
+- **Utilizing Generators**: Generators were introduced to optimize memory usage, particularly when handling large datasets retrieved from multiple expanded queries before reranking and summarization. Using memory_profiler, we strategically replaced list comprehensions with generators, resulting in a 20% reduction in memory consumption.
+
+- **Eliminating Redundant Object Assignments**: By removing unnecessary variable assignments, we minimized cyclic references that Python's garbage collector does not automatically clean up. This enhanced the structural clarity of the code, making it more concise, efficient, and maintainable.
+
+- **Implementing RunnableParallel**: Transitioning from sequential execution to RunnableParallel led to a 20% reduction in overall chain execution time, significantly improving performance.
+
+- **Metadata Filtering for Targeted Retrieval**: Introducing metadata filtering improved data search efficiency by restricting queries to relevant subsets rather than searching the entire database. This enhanced contextual accuracy, reduced hallucinations, and improved summarization quality.
+
+- **Batching MLflow Parameters**: Previously, logging each MLflow parameter separately incurred serialization overhead and frequent backend interactions, increasing compute load. By batching parameters into a single MLflow call, we reduced CPU preemption and optimized memory usage.
+
+- **Deleting Large Outputs**: Proactively clearing large, unused outputs significantly reduced memory overhead. As observed in profiling reports, this approach led to a 40% reduction in memory consumption.
 
 `constantly working on implementing more practices to reduce memory consumption, reduce latency and improvise CPU utilization`
 
 ### Github Actions for CI/CD:
 ---
 
-Github actions to Build-Test-Deploy Python Module and Deploy the Streamlit + FastAPI application as Docker Image inside AWS ECS.
+GitHub Actions for Building, Testing, and Deploying a Python Module, and Deploying Streamlit + FastAPI as a Docker Image on AWS ECS  
 
-Let's Understand, How you can Use this package to Built-Test-Deploy on your local environment.
+#### Local Build, Test, and Deployment Guide  
 
-below are the steps you can follow to run the Build-Test-deployment locally your package
- > Always run the package from your main-root folder i.e before hybrid_rag folder root directory
+This guide provides step-by-step instructions to build, test, and deploy your package locally.  
 
-```
+### **Prerequisites**  
+- Ensure you are running all commands from the **root directory**, i.e., the parent directory of `hybrid_rag`.  
+
+### **Steps to Build, Test, and Deploy Locally**  
+
+```sh
 1. git clone https://github.com/kolhesamiksha/Hybrid-Search-RAG.git
-1. cd Hybrid-Search-RAG
-1. python -m venv myvenv
-2. myvenv\Scripts\ativate
-3. apt-get update && apt-get install -y --no-install-recommends \
-    make build-essential && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    pip install poetry
-4. poetry install --with lint,dev,typing,codespell
-5. poetry build
-6. make install-precommit
-7. make run-precommit
-8. make test
+2. cd Hybrid-Search-RAG
+3. python -m venv myvenv
+4. myvenv\Scripts\activate  # For Windows users
+   source myvenv/bin/activate  # For macOS/Linux users
+5. apt-get update && apt-get install -y --no-install-recommends \
+   make build-essential && \
+   apt-get clean && rm -rf /var/lib/apt/lists/* && \
+   pip install poetry
+6. poetry install --with lint, dev, typing, codespell
+7. poetry build
+8. make install-precommit
+9. make run-precommit
+10. make test
 ```
 
-Now for Deployment of Streamlit and FastAPI Application developed a stratergy i.e. Deploy Both applications inside a single container and expose their ports independently one inside another using supervisord.
+#### Unique Deployment Strategy for Streamlit and FastAPI as Docker Contaienr over AWS
 
-- Dockerfile - Created a flow to Expose a fastapi and then further added that inside the streamlit application.
+To optimize deployment, both Streamlit and FastAPI applications are hosted within a single container, with each service exposing its ports independently. Supervisord is used to manage both processes efficiently.
 
+**Dockerfile Design**
 
-## Sample Output
+- The FastAPI application is exposed first, serving as the backend.
+- The Streamlit application is integrated within the same container, ensuring seamless interaction with FastAPI.
+- The Docker image follows best practices to be lightweight, ensuring minimal memory consumption and faster build times.
 
-I've builted a Chatbot over EY_IN Blogs data and test the end to end streamlit application builted using FastAPI which uses Hybrid-RAG Python package:)
+This approach ensures an efficient, scalable, and production-ready deployment. 🚀
+
+I'll provide the details and best practices to built the image in future, Please Stay tuned and fork the repository for future updates...
+
+## Sample Streamlit Application Output
+
+I've builted a Chatbot over EY-India Blogs data Scraped from their Website(Scraping was allowed by their robots.txt) and test the end to end streamlit application builted usinf streamlit as froentend and Request-response using a RestAPI builted using FastAPI which uses Hybrid-RAG as Python package:)
 
 ![chatbot_img_5](https://github.com/user-attachments/assets/7f407d47-7ea6-492a-82bf-ff8d1b69b08c)
 ![chatbot_img_6](https://github.com/user-attachments/assets/ba6b6639-aef7-45f8-81b5-e7b9af6cf3e5)
 ![chatbot_img_7](https://github.com/user-attachments/assets/e23b4ede-9e60-4677-9589-d2702a15c837)
 ![chatbot_img_8](https://github.com/user-attachments/assets/3049bf88-6fce-4e1f-aea9-0f2897357fed)
 
-### 📫 Developer Contact:
+## 📫 Developer Contact:
 
 **Samiksha Kolhe:)**
 
